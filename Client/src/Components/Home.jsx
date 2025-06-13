@@ -16,6 +16,7 @@ function Home() {
   const [Assignee, SetAssignee] = useState("");
   const [Schedule, SetSchedule] = useState("");
   const [Priority, SetPriority] = useState("");
+  const [Link, setlink] = useState("");
   const data = {
     TaskName,
     TaskDescription,
@@ -33,6 +34,12 @@ function Home() {
     }
     console.log("Form submitted with data:", data);
   };
+
+  const AttachLink = (event) => {
+    event.preventDefault();
+    let link = prompt("Please enter the link you want to attach:");
+    setlink(link);
+  };
   return (
     <div className="flex flex-col h-screen bg-amber-50">
       {/* Navbar */}
@@ -47,6 +54,11 @@ function Home() {
         </div>
 
         <div className="flex-1 ml-64 p- sticky top-16 overflow-y-auto">
+          <a href="/task/Calendar">
+            <button className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-300 hover:text-black transition mt-4 ml-3 ">
+              Calendar
+            </button>
+          </a>
           <Popup
             className="bg-black"
             trigger={
@@ -104,23 +116,21 @@ function Home() {
                           onChange={() =>
                             SetTaskDescription(event.target.value)
                           }
+                          value={Link ? Link : TaskDescription}
                           className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
                         ></textarea>
 
                         <div className="flex gap-3 flex-wrap mt-2">
-                          <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md">
-                            <FaBold /> Bold
-                          </button>
-                          <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md">
-                            <FaItalic /> Italic
-                          </button>
                           <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md">
                             <FaListUl /> List
                           </button>
                           <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md">
                             <FaListOl /> 123
                           </button>
-                          <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md">
+                          <button
+                            className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md"
+                            onClick={AttachLink}
+                          >
                             <FaLink /> Link
                           </button>
                         </div>
@@ -235,6 +245,11 @@ function Home() {
                         Swal.fire({
                           text: "Do you want to Cancel",
                           confirmButtonText: "Cancel",
+                        }).then((result) => {
+                          console.log(result);
+                          if (result.isConfirmed) {
+                            close();
+                          }
                         })
                       }
                       className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"

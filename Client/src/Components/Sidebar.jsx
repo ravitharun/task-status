@@ -1,12 +1,8 @@
-import { Disclosure, Menu, Transition } from "@headlessui/react";
+import { Disclosure } from "@headlessui/react";
 import {
   Bars3Icon,
   XMarkIcon,
-  ChevronDownIcon,
-  SunIcon,
-  MoonIcon,
 } from "@heroicons/react/24/outline";
-import { Fragment } from "react";
 
 const navigation = [
   { name: "Dashboard", href: "/", current: true },
@@ -23,17 +19,14 @@ function classNames(...classes) {
 
 export default function Sidebar() {
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-950 ">
-      <Disclosure
-        as="nav"
-        className="fixed top-0 left-0 h-full w-64 bg-gray-800 shadow-lg z-50"
-      >
+    <div className="min-h-screen flex flex-col sm:flex-row bg-gray-100 dark:bg-gray-950">
+      {/* Mobile Top Navbar */}
+      <Disclosure as="nav" className="sm:hidden bg-gray-800 shadow-md w-full">
         {({ open }) => (
           <>
-            {/* Header */}
-            <div className="flex items-center justify-between h-16 px-4 sm:px-6">
+            <div className="flex items-center justify-between px-4 py-4">
               <div className="text-white font-bold text-lg">Your Logo</div>
-              <Disclosure.Button className="sm:hidden text-gray-400 hover:text-white focus:outline-none">
+              <Disclosure.Button className="text-gray-400 hover:text-white focus:outline-none">
                 {open ? (
                   <XMarkIcon className="h-6 w-6" />
                 ) : (
@@ -42,49 +35,51 @@ export default function Sidebar() {
               </Disclosure.Button>
             </div>
 
-            {/* Navigation */}
-            <div className="hidden sm:block px-4">
-              <div className="mt-5 space-y-1">
-                {navigation.map((item) => (
-                  <a
-                    key={item.name}
-                    href={item.href}
-                    className={classNames(
-                      item.current
-                        ? "bg-gray-900 text-white"
-                        : "text-gray-300 hover:bg-gray-700 hover:text-white",
-                      "block rounded-md px-3 py-2 text-sm font-medium"
-                    )}
-                  >
-                    {item.name}
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            {/* Mobile Panel */}
-            <Disclosure.Panel className="sm:hidden px-4 pb-4">
-              <div className="space-y-1">
-                {navigation.map((item) => (
-                  <Disclosure.Button
-                    key={item.name}
-                    as="a"
-                    href={item.href}
-                    className={classNames(
-                      item.current
-                        ? "bg-gray-900 text-white"
-                        : "text-gray-300 hover:bg-gray-700 hover:text-white",
-                      "block rounded-md px-3 py-2 text-base font-medium"
-                    )}
-                  >
-                    {item.name}
-                  </Disclosure.Button>
-                ))}
-              </div>
+            {/* Mobile Menu */}
+            <Disclosure.Panel className="space-y-1 px-2 pb-4">
+              {navigation.map((item) => (
+                <Disclosure.Button
+                  key={item.name}
+                  as="a"
+                  href={item.href}
+                  className={classNames(
+                    item.current
+                      ? "bg-gray-900 text-white"
+                      : "text-gray-300 hover:bg-gray-700 hover:text-white",
+                    "block rounded-md px-3 py-2 text-base font-medium"
+                  )}
+                >
+                  {item.name}
+                </Disclosure.Button>
+              ))}
             </Disclosure.Panel>
           </>
         )}
       </Disclosure>
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden sm:block sm:w-64 bg-gray-800 shadow-lg min-h-screen">
+        <div className="px-4 py-5 text-white font-bold text-xl">Your Logo</div>
+        <nav className="mt-5 space-y-1 px-4">
+          {navigation.map((item) => (
+            <a
+              key={item.name}
+              href={item.href}
+              className={classNames(
+                item.current
+                  ? "bg-gray-900 text-white"
+                  : "text-gray-300 hover:bg-gray-700 hover:text-white",
+                "block rounded-md px-3 py-2 text-sm font-medium"
+              )}
+            >
+              {item.name}
+            </a>
+          ))}
+        </nav>
+      </aside>
+
+      {/* Main Content */}
+      
     </div>
   );
 }
