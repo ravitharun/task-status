@@ -1,18 +1,14 @@
 import { Disclosure } from "@headlessui/react";
-import {
-  Bars3Icon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
+import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 
 const navigation = [
-  { name: "Dashboard", href: "/", current: true },
+  { name: "My Tasks", href: "/", current: true },
   { name: "Team", href: "/team", current: false },
   { name: "Projects", href: "/projects", current: false },
   { name: "Calendar", href: "/calendar", current: false },
   { name: "Reports", href: "/reports", current: false },
   { name: "Settings", href: "/settings", current: false },
 ];
-
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
@@ -79,7 +75,6 @@ export default function Sidebar() {
       </aside>
 
       {/* Main Content */}
-      
     </div>
   );
 }

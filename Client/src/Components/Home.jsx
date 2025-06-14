@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Sidebar from "./Sidebar";
 import HorizontalNavbar from "./Horizontalnavbar";
 import Popup from "reactjs-popup";
@@ -15,6 +15,7 @@ function Home() {
   const [Type, SetType] = useState("");
   const [Assignee, SetAssignee] = useState("");
   const [Schedule, SetSchedule] = useState("");
+  const [EndSchedule, SetEndSchedule] = useState("");
   const [Priority, SetPriority] = useState("");
   const [Link, setlink] = useState("");
   const data = {
@@ -25,6 +26,7 @@ function Home() {
     Type,
     Assignee,
     Schedule,
+    EndSchedule,
     Priority,
   };
   const Submit = () => {
@@ -218,7 +220,17 @@ function Home() {
                           className="w-full border border-gray-300 rounded-lg p-3"
                         />
                       </div>
-
+                      <div>
+                        <label className="block text-sm font-semibold mb-1">
+                          End Schedule
+                        </label>
+                        <input
+                          type="datetime-local"
+                          onChange={() => SetEndSchedule(event.target.value)}
+                          value={EndSchedule}
+                          className="w-full border border-gray-300 rounded-lg p-3"
+                        />
+                      </div>
                       {/* Priority Dropdown with Icons */}
                       <div>
                         <label className="block text-sm font-semibold mb-1">

@@ -58,4 +58,33 @@ router.post('/api/Login', async (req, res) => {
     res.json({ message: 'Server error', error: error.message });
   }
 })
+
+
+// getting user info
+router.get('/api/user', async (req, res) => {
+  const { Email } = req.query;
+  if (!Email) {
+    console.log('email no ', Email);
+    return res.status(400).json({ message: 'Email is required' });
+  }
+  const User_info = await User.findOne({ email: Email });
+  if (!User_info) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+  return res.json({ message: User_info, status: 'success' });
+})
+
+// Form route to handle form submission
+router.post('/api/Formdata/submit',async(req,res)=>{
+  const{}=req.body
+  try {
+    // Handle form submission logic here
+    // For example, save the form data to the database
+    res.status(200).json({ message: 'Form submitted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+})
+
 module.exports = router;
