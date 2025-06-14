@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
 import HorizontalNavbar from "./Horizontalnavbar";
 import Popup from "reactjs-popup";
@@ -6,7 +6,8 @@ import { FaBold, FaItalic, FaListUl, FaListOl, FaLink } from "react-icons/fa";
 import { IoIosAdd } from "react-icons/io";
 import { IoMdClose } from "react-icons/io";
 import Swal from "sweetalert2";
-
+import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
 function Home() {
   const [TaskName, SettaskName] = useState("");
   const [TaskDescription, SetTaskDescription] = useState("");
@@ -18,6 +19,31 @@ function Home() {
   const [EndSchedule, SetEndSchedule] = useState("");
   const [Priority, SetPriority] = useState("");
   const [Link, setlink] = useState("");
+  const [GetTask, SetTask] = useState([]);
+
+  // getting the all Task data from backend
+
+  useEffect(() => {
+    const GETTASK = async () => {
+      toast.success("Hello all", {
+        position: "bottom-left",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+      const task_data = await axios.get("http://localhost:3000/TaskAll/api");
+      SetTask(task_data.data.message);
+      console.log(task_data.data.message)
+    };
+    // Welcome();
+    GETTASK();
+  }, []);
+
+  // Getting the All useState in one object
   const data = {
     TaskName,
     TaskDescription,
@@ -29,19 +55,54 @@ function Home() {
     EndSchedule,
     Priority,
   };
-  const Submit = () => {
+
+  // table heading's
+  const Heading = [
+    "TaskName",
+    "TaskDescription",
+    "EstimatedTime",
+    "Status",
+    "Type",
+    "Assignee",
+    "Schedule",
+    "EndSchedule",
+    "Priority",
+  ];
+
+  // submitting the Task Information to Backend
+  const Submit = async () => {
     if (!TaskName || !Type || !Assignee || !Priority || !Schedule) {
       alert("Please fill all the required fields");
       return;
     }
+    const response = await axios.post("http://localhost:3000/task/api/Data", {
+      data,
+    });
+    console.log(data, "ui");
+    if (response.data.status == "Added Correctly") {
+      toast.success(response.data.status, {
+        position: "bottom-top",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    }
+
     console.log("Form submitted with data:", data);
   };
 
+  // Attaching the Link in the TextField
   const AttachLink = (event) => {
     event.preventDefault();
     let link = prompt("Please enter the link you want to attach:");
     setlink(link);
   };
+
+  // jsx code HTML
   return (
     <div className="flex flex-col h-screen bg-amber-50">
       {/* Navbar */}
@@ -319,52 +380,20 @@ function Home() {
               <table className="w-full table-auto border-collapse text-sm">
                 <thead className="bg-gray-100 text-gray-700 uppercase">
                   <tr>
-                    <th className="px-4 py-3 text-left whitespace-nowrap">
-                      Task Details
-                    </th>
-                    <th className="px-4 py-3 text-left whitespace-nowrap">
-                      Status
-                    </th>
-                    <th className="px-4 py-3 text-left whitespace-nowrap">
-                      Type
-                    </th>
-                    <th className="px-4 py-3 text-left whitespace-nowrap">
-                      Due Date
-                    </th>
-                    <th className="px-4 py-3 text-left whitespace-nowrap">
-                      Priority
-                    </th>
-                    <th className="px-4 py-3 text-left whitespace-nowrap">
-                      Assignee
-                    </th>
-                    <th className="px-4 py-3 text-left whitespace-nowrap">
-                      Spent Time
-                    </th>
-                    <th className="px-4 py-3 text-left whitespace-nowrap">
-                      Actions
-                    </th>
+                    {Heading.map((data, id) => {
+                      return (
+                        <th
+                          className="px-4 py-3 text-left whitespace-nowrap"
+                          key={id}
+                        >
+                          {data}
+                        </th>
+                      );
+                    })}
                   </tr>
                 </thead>
-                <tbody className="text-gray-800 divide-y divide-gray-200">
-                  <tr className="hover:bg-gray-50">
-                    <td className="px-4 py-3 font-medium">Redesign Homepage</td>
-                    <td className="px-4 py-3">
-                      <span className="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
-                        In Progress
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">Feature</td>
-                    <td className="px-4 py-3">2025-06-20</td>
-                    <td className="px-4 py-3 text-red-600 font-semibold">
-                      High
-                    </td>
-                    <td className="px-4 py-3">Ravi</td>
-                    <td className="px-4 py-3">2h</td>
-                    <td className="px-4 py-3 text-blue-500 cursor-pointer">
-                      View
-                    </td>
-                  </tr>
 
+                <tbody className="text-gray-800 divide-y divide-gray-200">
                   <tr className="hover:bg-gray-50">
                     <td className="px-4 py-3 font-medium">Fix Login Bug</td>
                     <td className="px-4 py-3">
@@ -376,32 +405,6 @@ function Home() {
                     <td className="px-4 py-3">2025-06-10</td>
                     <td className="px-4 py-3 text-green-600 font-semibold">
                       Low
-                    </td>
-                    <td className="px-4 py-3">Ankit</td>
-                    <td className="px-4 py-3">1.5h</td>
-                    <td className="px-4 py-3 text-blue-500 cursor-pointer">
-                      View
-                    </td>
-                  </tr>
-
-                  <tr className="hover:bg-gray-50">
-                    <td className="px-4 py-3 font-medium">
-                      Add Payment Integration
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="px-2 py-1 rounded-full text-xs font-semibold bg-gray-200 text-gray-700">
-                        Pending
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">Integration</td>
-                    <td className="px-4 py-3">2025-06-25</td>
-                    <td className="px-4 py-3 text-yellow-600 font-semibold">
-                      Medium
-                    </td>
-                    <td className="px-4 py-3">Priya</td>
-                    <td className="px-4 py-3">3h</td>
-                    <td className="px-4 py-3 text-blue-500 cursor-pointer">
-                      View
                     </td>
                   </tr>
                 </tbody>

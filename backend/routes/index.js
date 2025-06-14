@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 const bcrypt = require('bcrypt');
-var { User } = require('../bin/Database');
+var { User, TaskModel } = require('../bin/Database');
 
 
 // Route to handle user signup
@@ -75,8 +75,8 @@ router.get('/api/user', async (req, res) => {
 })
 
 // Form route to handle form submission
-router.post('/api/Formdata/submit',async(req,res)=>{
-  const{}=req.body
+router.post('/api/Formdata/submit', async (req, res) => {
+  const { } = req.body
   try {
     // Handle form submission logic here
     // For example, save the form data to the database
@@ -84,6 +84,39 @@ router.post('/api/Formdata/submit',async(req,res)=>{
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error', error: error.message });
+  }
+})
+// Storing the from data
+router.post("/task/api/Data", async (req, res) => {
+  const { data } = req.body;
+  if (!data) {
+    return res.json({ message: "No data " })
+
+  }
+  const task_Adding = new TaskModel({
+    TaskName: data.TaskName,
+    TaskDescription: data.TaskDescription,
+    EstimatedTime: data.EstimatedTime,
+    Status: data.Status,
+    Type: data.Type,
+    Assignee: data.Assignee,
+    Schedule: data.Schedule,
+    EndSchedule: data.EndSchedule,
+    Priority: data.Priority,
+  })
+  await task_Adding.save()
+  console.log("Data from ui is ", data)
+  res.json({ message: task_Adding, status: "Added Correctly" })
+})
+
+// get all task Information 
+router.get('/TaskAll/api', async (req, res) => {
+  try {
+    const response = await TaskModel.find({})
+    console.log(response)
+    res.json({ message: response })
+  } catch (error) {
+    res.json({ message: error })
   }
 })
 
