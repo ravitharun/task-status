@@ -49,8 +49,17 @@ const Task = mongoose.Schema({
   Priority: { type: String, required: true },
 
 }, { timestamps: true })
+const TeamSchema = new mongoose.Schema({
+  members: [String], // an array of emails
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
 // Create and export the User model
 const User = mongoose.model('User', userSchema);
 const TaskModel = mongoose.model('Task', Task)
-module.exports = { User,TaskModel };
+module.exports = mongoose.model("Team", TeamSchema);
+
+module.exports = { User, TaskModel, TeamSchema };

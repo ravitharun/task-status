@@ -1,29 +1,40 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
 import HorizontalNavbar from "./Horizontalnavbar";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css"; // Required default styles
+import axios from "axios";
 
 const localizer = momentLocalizer(moment);
 
 function CalendarPage() {
-  const events = [
-    {
-      title: " Team Meeting",
-      type: "meeting",
-      start: new Date(2025, 5, 13, 10, 0), // June 13, 2025 - 10:00 AM
-      end: new Date(2025, 5, 13, 11, 0),
-    },
-    {
-      title: " Launch Review",
-      type: "review",
-      start: new Date(2025, 5, 14, 14, 0),
-      end: new Date(2025, 5, 14, 15, 30),
-    },
-  ];
+  const [Events, seEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  console.log(localizer);
+  useEffect(() => {
+    const GetallTask = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/TaskAll/api");
+        seEvents(response.data.message);
+      } catch (err) {
+        console.log(err)
+        setError("Failed to load tasks");
+      } finally {
+        setLoading(false);
+      }
+    };
+    GetallTask();
+  }, []);
+
+  const calendarEvents = Events.map((data) => ({
+    title: data.TaskName,
+    type: data.Type,
+    start: new Date(data.Schedule), // Example: June 13, 14, 15...
+    end: new Date(data.EndSchedule),
+  }));
+
   return (
     <>
       {/* Top Navigation Bar */}
@@ -42,37 +53,46 @@ function CalendarPage() {
           <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
             📅 Calendar View
           </h2>
+
           <a href="/">
-            {" "}
-            <button className="px-6 py-2 bg-blue-600 mb-2 text-white rounded-md hover:bg-blue-300 hover:text-black transition mt-4 ml-3 ">
+            <button className="px-6 py-2 bg-blue-600 mb-2 text-white rounded-md hover:bg-blue-300 hover:text-black transition mt-4 ml-3">
               Task
             </button>
           </a>
-          <div className="overflow-x-auto rounded-lg border border-gray-200">
-            <Calendar
-              localizer={localizer}
-              events={events}
-              startAccessor="start"
-              endAccessor="end"
-              style={{ height: 500 }}
-              className="bg-white rounded-lg shadow-md"
-              defaultView="month"
-              components={{
-                event: ({ event }) => (
-                  <span
-                    className="text-sm font-semibold text-black-600"
-                    style={{
-                      color: event.type === "meeting" ? "emerald " : "#green",
-                    }}
-                  >
-                    <i>
-                      {event.type == "meeting" ? "📅" : "🚀"} {event.title}
-                    </i>
-                  </span>
-                ),
-              }}
-            />
-          </div>
+
+          {loading ? (
+            <p className="text-center text-gray-600">Loading tasks...</p>
+          ) : error ? (
+            <p className="text-center text-red-600">{error}</p>
+          ) : (
+            <div className="overflow-x-auto rounded-lg border border-gray-200">
+              <Calendar
+                localizer={localizer}
+                events={calendarEvents}
+                startAccessor="start"
+                endAccessor="end"
+                style={{ height: 500 }}
+                className="bg-gray-200 rounded-lg shadow-md"
+                defaultView="month"
+                components={{
+                  event: ({ event }) => (
+                    <span
+                      className="text-sm font-semibold"
+                      style={{
+                        color:
+                          event.type === "meeting" ? "red" : "indigo", // green / blue
+                          fontFamily:"inherit"
+                      }}
+                    >
+                      <i>
+                        {event.type === "meeting" ? "📅" : "🚀"} {event.title}
+                      </i>
+                    </span>
+                  ),
+                }}
+              />
+            </div>
+          )}
         </div>
       </div>
     </>

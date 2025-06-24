@@ -10,9 +10,9 @@ Day 1: Project Setup & Initial Planning✔️
 Day 2: User Authentication
 • - Design New user schema (name, email, password).✔️
 • - Design user schema (name, email, password).✔️
-• - Implement user registration API.❌
-• - Implement user login with JWT authentication.❌
-• - Protect routes using JWT middleware.❌
+• - Implement user registration API.✔️
+• - Implement user login with JWT authentication.✔️
+• - Protect routes using JWT middleware.✔️
 -----------------------------------------------✔️------------------------------------------
 Day 3: Board Management Backend
 • - Design Board schema (name, description, createdBy, members).

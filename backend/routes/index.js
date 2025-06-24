@@ -1,8 +1,21 @@
 var express = require('express');
 var router = express.Router();
 const bcrypt = require('bcrypt');
-var { User, TaskModel } = require('../bin/Database');
+var { User, TaskModel, Team } = require('../bin/Database');
+const nodemailer = require("nodemailer");
+require('dotenv').config();
 
+const SECRET_KEY = process.env.SECRET_KEY;
+
+
+// Configure Nodemailer
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
 // Route to handle user signup
 // This route handles user registration by accepting user details, validating them, hashing the password, and saving the user to the database.
@@ -37,6 +50,7 @@ router.post('/api/signup', async function (req, res) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
+
 // authentication the user
 router.post('/api/Login', async (req, res) => {
   try {
@@ -64,7 +78,6 @@ router.post('/api/Login', async (req, res) => {
 router.get('/api/user', async (req, res) => {
   const { Email } = req.query;
   if (!Email) {
-    console.log('email no ', Email);
     return res.status(400).json({ message: 'Email is required' });
   }
   const User_info = await User.findOne({ email: Email });
@@ -89,10 +102,8 @@ router.post('/api/Formdata/submit', async (req, res) => {
 // Storing the from data
 router.post("/task/api/Data", async (req, res) => {
   const { data } = req.body;
-  if (!data) {
-    return res.json({ message: "No data " })
+  if (!data) return res.json({ message: "No data " });
 
-  }
   const task_Adding = new TaskModel({
     TaskName: data.TaskName,
     TaskDescription: data.TaskDescription,
@@ -103,21 +114,165 @@ router.post("/task/api/Data", async (req, res) => {
     Schedule: data.Schedule,
     EndSchedule: data.EndSchedule,
     Priority: data.Priority,
-  })
-  await task_Adding.save()
-  console.log("Data from ui is ", data)
-  res.json({ message: task_Adding, status: "Added Correctly" })
-})
+  });
+
+  await task_Adding.save();
+
+
+
+  res.json({ message: task_Adding, status: "Added Correctly" });
+});
+
+
 
 // get all task Information 
 router.get('/TaskAll/api', async (req, res) => {
   try {
     const response = await TaskModel.find({})
-    console.log(response)
     res.json({ message: response })
   } catch (error) {
     res.json({ message: error })
   }
 })
+
+// deleting the task 
+router.get("/api/task/Remove", async (req, res) => {
+  try {
+    const { id } = req.query;
+    if (!id) {
+      return res.status(400).json({ message: "ID is required" });
+    }
+
+    const deletedTask = await TaskModel.findByIdAndDelete(id);
+    if (!deletedTask) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    return res.status(200).json({ message: "Deleted successfully", deletedTask });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+// edit the task implementation 
+router.put("/api/Task/edit", async (req, res) => {
+  try {
+    const { id } = req.body
+    if (!id) {
+      return res.json({ message: "The id Is Null" })
+    }
+    const GetData_Id = await TaskModel.find({ _id: id })
+    res.json({ message: GetData_Id })
+  }
+  catch (err) {
+
+  }
+})
+// send requesting through email 
+router.post("/api/taskadd/email", async (req, res) => {
+  const { Email } = req.body;
+  if (!Email) {
+    return res.status(404).json({ message: "Email No't got" })
+  }
+  const FindUser = await User.findOne({ email: Email })
+  if (!FindUser) {
+
+    return res.json({ message: 'No user found !' })
+
+
+
+  }
+  // here email part sending
+  const link = `http://localhost:5173/?email=${FindUser.email}`;
+  const message = {
+    from: "tr565003@gmail.com",
+    to: FindUser.email,
+    subject: "🎉 You're Invited to Join the TaskNest Team!",
+
+    // Plain text fallback for email clients that do not support HTML
+    text: `Hello ${FindUser.name || "there"},\n\nYou've been invited to join the TaskNest team.\nClick the link below to get started:\nhttps://your-frontend-url.com/login\n\nWelcome aboard!`,
+
+    // HTML content for modern email clients
+    html: `
+    <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+      <h2>👋 Hello ${FindUser.name || "there"},</h2>
+      <p>You’ve been invited to join <strong>TaskNest</strong>, your new project and task management tool.</p>
+      <p>Click the button below to get started:</p>
+<a href="http://192.168.1.5:3000/accept-invite?email=${FindUser.email}">Accept Invitation</a>
+
+      <p style="margin-top: 20px;">If you didn’t request this, you can safely ignore this email.</p>
+      <p>Cheers,<br/>The TaskNest Team</p>
+    </div>
+  `,
+
+    // AMP4Email content (optional, for clients that support AMP)
+    amp: `
+    <!doctype html>
+    <html ⚡4email>
+      <head>
+        <meta charset="utf-8">
+        <style amp4email-boilerplate>body{visibility:hidden}</style>
+        <script async src="https://cdn.ampproject.org/v0.js"></script>
+        <script async custom-element="amp-anim" src="https://cdn.ampproject.org/v0/amp-anim-0.1.js"></script>
+      </head>
+      <body>
+        <h2>👋 You're Invited to TaskNest!</h2>
+        <p>Click below to join the team and start collaborating:</p>
+        <p>
+  
+   <a href="http://192.168.238.17:5173/accept-invite?email=tharunravi672@gmail.com">Accept Invitation</a>
+
+
+   style="display: inline-block; padding: 10px 20px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 5px;">
+  Accept Invitation
+</a>
+
+        </p>
+        <p>Here's a fun gif for you:</p>
+        <amp-anim src="https://cldup.com/D72zpdwI-i.gif" width="500" height="350"></amp-anim>
+      </body>
+    </html>
+  `
+  };
+
+  transporter.sendMail(message, (error, info) => {
+    if (error) {
+      console.error("Email error:", error);
+    } else {
+      return res.status(200).json({ message: 'Email sent:'.toUpperCase() })
+    }
+  });
+
+})
+
+// email
+router.get('/accept-invite', (req, res) => {
+  const email = req.query.email;
+  console.log(`✅ Invite clicked by: ${email}`);
+  
+  // Redirect to your frontend team page (optional)
+  res.redirect('http://192.168.238.17:5173/team');
+});
+
+
+
+// routes/team.js
+router.post("/add", async (req, res) => {
+  const { email } = req.body;
+  try {
+    const existing = await Team.findOne({ email });
+    if (existing) {
+      return res.json({ exists: true });
+    }
+
+    const newMember = new Team({ email });
+    await newMember.save();
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 
 module.exports = router;

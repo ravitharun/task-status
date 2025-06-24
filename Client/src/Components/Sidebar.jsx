@@ -5,7 +5,7 @@ const navigation = [
   { name: "My Tasks", href: "/", current: true },
   { name: "Team", href: "/team", current: false },
   { name: "Projects", href: "/projects", current: false },
-  { name: "Calendar", href: "/calendar", current: false },
+  { name: "Calendar", href: "/task/Calendar", current: false },
   { name: "Reports", href: "/reports", current: false },
   { name: "Settings", href: "/settings", current: false },
 ];
