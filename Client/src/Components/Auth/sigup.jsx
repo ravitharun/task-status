@@ -195,7 +195,11 @@ function Signup() {
               </label>
             </div>
           </div>
-
+     <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
+            <a href="/login" class="text-white hover:underline">
+              Do UHhave an account? <strong className="text-red-400">Login In Now</strong>
+            </a>
+          </div>
           {/* Signup Button */}
           <button
             type="submit"

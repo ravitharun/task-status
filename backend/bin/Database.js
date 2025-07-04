@@ -49,9 +49,16 @@ const Task = mongoose.Schema({
   Priority: { type: String, required: true },
 
 }, { timestamps: true })
+
+
 const TeamSchema = new mongoose.Schema({
-  members: [String], // an array of emails
-  createdAt: {
+  Name: { type: String, default: "Jon Dev" },
+  members: { type:String }, // an array of emails
+  invitedBy: {
+    type: String,
+    default: "tr55@gmail.com"
+  },
+    createdAt: {
     type: Date,
     default: Date.now,
   },
@@ -60,6 +67,6 @@ const TeamSchema = new mongoose.Schema({
 // Create and export the User model
 const User = mongoose.model('User', userSchema);
 const TaskModel = mongoose.model('Task', Task)
-module.exports = mongoose.model("Team", TeamSchema);
+const Team = mongoose.model('TeamSchema', TeamSchema)
 
-module.exports = { User, TaskModel, TeamSchema };
+module.exports = { User, TaskModel, Team };

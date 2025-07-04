@@ -2,27 +2,54 @@ import React, { useState } from "react";
 import Popup from "reactjs-popup";
 import { IoMdClose } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
-
+import CryptoJS from "crypto-js";
 import axios from "axios";
+import { useEffect } from "react";
+import { socket } from "./socket";
 function Invite() {
   const [Email, Setemail] = useState("");
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  useEffect(() => {
+    const reponseemail = () => {
+      socket.on("AcceptInvite", (dataMessage) => {
+        alert(dataMessage.message);
+      });
+      socket.on("CheckUSerTeam", (dataMessage) => {
+        alert(dataMessage.message);
+      });
+    };
+    reponseemail();
+  }, []);
 
   const Sendinvite = async (e) => {
     // calling api here
+    const Invited_Email = localStorage.getItem("useremail");
+
+    const secretKey = "mySecretKey123";
+    const bytes = CryptoJS.AES.decrypt(Invited_Email, secretKey);
+
+    // Convert bytes to original string
+    const decryptedEmail = bytes.toString(CryptoJS.enc.Utf8);
+
+    console.log("encryptedEmail", decryptedEmail);
     e.preventDefault();
+    if (!Email) {
+      alert("Please enter an email address.");
+      return;
+    }
     const response_email = await axios.post(
       "http://localhost:3000/api/taskadd/email",
-      { Email }
+      { Email, decryptedEmail }
     );
     console.log(response_email.data.message);
     if (response_email.data.message == "No user found !") {
       alert("No user found !");
-      navigate("/login")
+      navigate("/login");
     } else {
-        alert(response_email.data.message)
+      alert(response_email.data.message);
     }
   };
+
   return (
     <>
       <Popup
@@ -54,6 +81,8 @@ function Invite() {
               <form className="space-y-4">
                 <input
                   type="email"
+                  required
+                  value={Email}
                   placeholder="Enter email address"
                   onChange={(e) => Setemail(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 shadow-sm"

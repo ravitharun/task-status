@@ -55,7 +55,15 @@ export default function Sidebar() {
 
       {/* Desktop Sidebar */}
       <aside className="hidden sm:block sm:w-64 bg-gray-800 shadow-lg min-h-screen">
-        <div className="px-4 py-5 text-white font-bold text-xl">Your Logo</div>
+        <div className="flex flex-col items-center justify-center py-6">
+          <img
+            src="https://grupoportfolio.com.br/portfolio-tech/wp-content/uploads/sites/2/2020/09/LOGO-TASK-MANAGER.png"
+            alt="Task Manager"
+            className="w-20 h-20 rounded-full object-cover shadow-lg"
+          />
+          <span className="text-white mt-3 font-semibold text-lg">TaskNet</span>
+        </div>
+
         <nav className="mt-5 space-y-1 px-4">
           {navigation.map((item) => (
             <a

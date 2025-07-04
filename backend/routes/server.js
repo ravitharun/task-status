@@ -15,7 +15,7 @@ const io = socketIO(server, {
     methods: ['GET', 'POST']
   }
 });
-
+app.use('/', taskRoutes);
 // ✅ Middleware to inject io
 app.use((req, res, next) => {
   req.io = io;

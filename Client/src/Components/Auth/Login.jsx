@@ -11,7 +11,7 @@ function Login() {
   const [Email, SetEmail] = useState("");
   const [Password, SetPassword] = useState("");
   const [Login, setLogin] = useState(false);
-  const secretKey = "mySecretKey123"; 
+  const secretKey = "mySecretKey123";
   const signInWithGoogle = async () => {
     try {
       // signInWithPopup returns a UserCredential, you might want to use it
@@ -91,9 +91,9 @@ function Login() {
     }
     localStorage.setItem("Login", Login);
   };
-// these function is use to decrpty the useremail stored in loacalStorage
-const encryptedEmail = localStorage.getItem('useremail');
-console.log('login',encryptedEmail)
+  // these function is use to decrpty the useremail stored in loacalStorage
+  const encryptedEmail = localStorage.getItem("useremail");
+  console.log("login", encryptedEmail);
   // show password function
   // This function toggles the visibility of the password field
   const Showpassword = () => {
@@ -180,6 +180,11 @@ console.log('login',encryptedEmail)
                 Show password{" "}
               </label>
             </div>
+          </div>
+          <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
+            <a href="/CreateAccount" class="text-white hover:underline">
+              Don't have an account? <strong className="text-blue-300">Create one now</strong>
+            </a>
           </div>
 
           {/* Signup Button */}

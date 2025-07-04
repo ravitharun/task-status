@@ -1,30 +1,38 @@
-import React from "react";
+import CryptoJS from "crypto-js";
 import Sidebar from "./Sidebar";
 import HorizontalNavbar from "./Horizontalnavbar";
 import Invite from "./Invite";
-
-const teamMembers = [
-  {
-    name: "Alice Johnson",
-    email: "alice@example.com",
-    role: "Frontend Developer",
-    status: "Active",
-  },
-  {
-    name: "Bob Smith",
-    email: "bob@example.com",
-    role: "Backend Developer",
-    status: "Inactive",
-  },
-  {
-    name: "Charlie Lee",
-    email: "charlie@example.com",
-    role: "Project Manager",
-    status: "Active",
-  },
-];
-
+import { useEffect } from "react";
+import axios from "axios";
+import { useState } from "react";
+import { socket } from "./socket";
+// import { socket } from "./socket";
 function Team() {
+  const [Teammember, setTeam] = useState([]);
+  useEffect(() => {
+    const teamMembers = async () => {
+      const reponse = await axios.get("http://localhost:3000/api/Task/Member");
+      setTeam(reponse.data.data);
+      console.log(reponse.data.data, "api call");
+    };
+    teamMembers();
+  }, []);
+
+  // to check the totalteam
+  useEffect(() => {
+    const handleTotalTeam = (TeamMemebr) => {
+      setTeam(TeamMemebr.TotalTeam); // Update UI
+      console.log("✅ Updated team received via socket:", TeamMemebr.TotalTeam);
+    };
+
+    socket.on("TotalTeam", handleTotalTeam);
+
+    return () => {
+      socket.off("TotalTeam", handleTotalTeam); // Cleanup
+    };
+  }, []);
+
+  const Status = "offline";
   return (
     <div className="flex flex-col h-screen bg-amber-50">
       {/* Top Navbar */}
@@ -57,7 +65,7 @@ function Team() {
               <div>
                 <p className="text-sm text-gray-500">Total Team Members</p>
                 <p className="text-xl font-bold text-gray-800">
-                  {teamMembers.length}
+                  {Teammember.length}
                 </p>
               </div>
             </div>
@@ -78,6 +86,9 @@ function Team() {
                     Role
                   </th>
                   <th className="px-6 py-3 text-left font-semibold text-gray-600">
+                    invitedBy
+                  </th>
+                  <th className="px-6 py-3 text-left font-semibold text-gray-600">
                     Status
                   </th>
                   <th className="px-6 py-3 text-left font-semibold text-gray-600">
@@ -86,35 +97,72 @@ function Team() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {teamMembers.map((member, index) => (
+                {Teammember.map((member, index) => (
                   <tr key={index} className="hover:bg-gray-50 transition">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold uppercase">
-                          {member.name.charAt(0)}
+                          {member.Name.charAt(0)}
                         </div>
                         <span className="font-medium text-gray-800">
-                          {member.name}
+                          {member.Name}
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">{member.email}</td>
-                    <td className="px-6 py-4">{member.role}</td>
+                    <td className="px-6 py-4">
+                      <a
+                        href={`mailto:${
+                          member.members
+                        }?subject=Team Invitation&body=${encodeURIComponent(
+                          `Hi,\n\nYou are invited to join the team.\nClick the link below to accept the invitation:\nhttp://localhost:5000/accept-invite?email=${member.members}&invited=admin@example.com`
+                        )}`}
+                        className="text-blue-600 hover:underline"
+                      >
+                        {member.members}
+                      </a>
+                    </td>
+                    <td className="px-6 py-4">
+                      {(member.role || "employee").charAt(0).toUpperCase() +
+                        (member.role || "employee").slice(1).toLowerCase()}
+                    </td>
+
+                    <td>
+                      <span>
+                        {" "}
+                        <a
+                          href={`mailto:${
+                            member.members
+                          }?subject=Team Invitation&body=${encodeURIComponent(
+                            `Hi,\n\nYou are invited to join the team.\nClick the link below to accept the invitation:\nhttp://localhost:5000/accept-invite?email=${member.members}&invited=admin@example.com`
+                          )}`}
+                          className="text-blue-600 hover:underline"
+                        >
+                          {member.invitedBy}
+                        </a>
+                      </span>
+                    </td>
                     <td className="px-6 py-4">
                       <span
                         className={`px-3 py-1 text-sm font-medium rounded-full ${
-                          member.status === "Active"
+                          Status === "Active"
                             ? "bg-green-100 text-green-700"
                             : "bg-red-100 text-red-700"
                         }`}
                       >
-                        {member.status}
+                        {Status}
                       </span>
                     </td>
+
                     <td>
                       <button
                         className="px-3 py-1 text-sm bg-red-500 text-white rounded-md hover:bg-red-600"
-                        onClick={() => alert("removing the team member ")}
+                        onClick={() =>
+                          alert(
+                            "removing the team member and also send emil to the user"
+                          )
+                        }
+                        title="Remove Team Member"
+                        style={{ cursor: "pointer" }}
                       >
                         Remove
                       </button>

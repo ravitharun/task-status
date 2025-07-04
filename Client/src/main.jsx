@@ -8,12 +8,14 @@ import Calendar from "./Components/Calendar.jsx";
 import Signup from "./Components/Auth/sigup.jsx";
 import Team from "./Components/Team.jsx";
 import Acceptinvite from "./Components/Acceptinvite.jsx";
+import Projects from "./Components/Projects.jsx";
 
 createRoot(document.getElementById("root")).render(
   <Router>
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/task/Calendar" element={<Calendar />} />
+      <Route path="projects" element={<Projects />} />
       <Route path="/team" element={<Team />} />
       <Route path="/login" element={<Login />} />
       <Route path="/accept-invite" element={<Acceptinvite />} />

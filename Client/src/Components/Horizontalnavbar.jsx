@@ -33,7 +33,6 @@ function HorizontalNavbar() {
           return;
         }
 
-  
         // Fetch user info
         const Getresponse = await axios.get(`http://localhost:3000/api/user/`, {
           params: { Email: decryptedEmail },
@@ -53,9 +52,9 @@ function HorizontalNavbar() {
     <nav className="bg-white border-gray-200 dark:bg-gray-900 dark:border-gray-700 shadow-md">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
         {/* Logo */}
-        <a href="#" className="flex items-center space-x-3 rtl:space-x-reverse">
-          <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">
-            Task Manager
+        <a href="#" className="flex items-center space-x-3 rtl:space-x-reverse">  
+          <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white  hover:text-fuchsia-600" >
+            TaskNet{" "}
           </span>
         </a>
 
@@ -73,8 +72,7 @@ function HorizontalNavbar() {
               <img
                 className="w-8 h-8 rounded-full object-cover"
                 src={
-                  UserInfo?.Profile ||
-                  "https://ui-avatars.com/api/?name=User"
+                  UserInfo?.Profile || "https://ui-avatars.com/api/?name=User"
                 }
                 alt="user"
               />

@@ -4,9 +4,17 @@ const bcrypt = require('bcrypt');
 var { User, TaskModel, Team } = require('../bin/Database');
 const nodemailer = require("nodemailer");
 require('dotenv').config();
-
+const http = require("http");
+const app = require("../app"); // Basic Express app
+const server = http.createServer(app);
+const { Server } = require("socket.io");
 const SECRET_KEY = process.env.SECRET_KEY;
-
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
+  },
+});
 
 // Configure Nodemailer
 const transporter = nodemailer.createTransport({
@@ -99,41 +107,56 @@ router.post('/api/Formdata/submit', async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 })
-// Storing the from data
+
+
+
+// Storing the from data and adding the web socket
+// POST route: Save task and emit via Socket.IO
 router.post("/task/api/Data", async (req, res) => {
   const { data } = req.body;
-  if (!data) return res.json({ message: "No data " });
+  if (!data) return res.status(400).json({ message: "No data" });
 
-  const task_Adding = new TaskModel({
-    TaskName: data.TaskName,
-    TaskDescription: data.TaskDescription,
-    EstimatedTime: data.EstimatedTime,
-    Status: data.Status,
-    Type: data.Type,
-    Assignee: data.Assignee,
-    Schedule: data.Schedule,
-    EndSchedule: data.EndSchedule,
-    Priority: data.Priority,
-  });
+  try {
+    const task_Adding = new TaskModel({
+      TaskName: data.TaskName,
+      TaskDescription: data.TaskDescription,
+      EstimatedTime: data.EstimatedTime,
+      Status: data.Status,
+      Type: data.Type,
+      Assignee: data.Assignee,
+      Schedule: data.Schedule,
+      EndSchedule: data.EndSchedule,
+      Priority: data.Priority,
+    });
 
-  await task_Adding.save();
+    await task_Adding.save();
+
+    // ✅ Emit actual task data to all clients
+    io.emit("Taskadded", {
+      message: "✅ New task added!",
+      data: task_Adding, // the saved task object
+    });
 
 
-
-  res.json({ message: task_Adding, status: "Added Correctly" });
+    res.status(201).json(task_Adding); // respond to client
+  } catch (error) {
+    console.error("❌ Error saving task:", error);
+    res.status(500).json({ message: "Failed to save task", error: error.message });
+  }
 });
 
 
 
 // get all task Information 
+// GET route: Return all tasks cleanly
 router.get('/TaskAll/api', async (req, res) => {
   try {
-    const response = await TaskModel.find({})
-    res.json({ message: response })
+    const tasks = await TaskModel.find({});
+    res.status(200).json({ message: tasks }); // ✅ return as array
   } catch (error) {
-    res.json({ message: error })
+    res.status(500).json({ message: "Failed to fetch tasks", error: error.message });
   }
-})
+});
 
 // deleting the task 
 router.get("/api/task/Remove", async (req, res) => {
@@ -147,8 +170,8 @@ router.get("/api/task/Remove", async (req, res) => {
     if (!deletedTask) {
       return res.status(404).json({ message: "Task not found" });
     }
+    io.emit("taskDeleted", { message: "Task deleted by Tharun" });
 
-    return res.status(200).json({ message: "Deleted successfully", deletedTask });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal Server Error" });
@@ -169,9 +192,12 @@ router.put("/api/Task/edit", async (req, res) => {
 
   }
 })
+
+
 // send requesting through email 
 router.post("/api/taskadd/email", async (req, res) => {
-  const { Email } = req.body;
+  const { Email, decryptedEmail } = req.body;
+  console.log({ user_email: Email, decryptedEmail: decryptedEmail })
   if (!Email) {
     return res.status(404).json({ message: "Email No't got" })
   }
@@ -184,7 +210,9 @@ router.post("/api/taskadd/email", async (req, res) => {
 
   }
   // here email part sending
-  const link = `http://localhost:5173/?email=${FindUser.email}`;
+  const inviteUrl = `http://192.168.238.17:3000/accept-invite?email=${Email}&invited=${decryptedEmail}`;
+
+
   const message = {
     from: "tr565003@gmail.com",
     to: FindUser.email,
@@ -199,13 +227,14 @@ router.post("/api/taskadd/email", async (req, res) => {
       <h2>👋 Hello ${FindUser.name || "there"},</h2>
       <p>You’ve been invited to join <strong>TaskNest</strong>, your new project and task management tool.</p>
       <p>Click the button below to get started:</p>
-<a href="http://192.168.1.5:3000/accept-invite?email=${FindUser.email}">Accept Invitation</a>
+<a href="${inviteUrl}">
+  Accept Invitation
+</a>
 
       <p style="margin-top: 20px;">If you didn’t request this, you can safely ignore this email.</p>
       <p>Cheers,<br/>The TaskNest Team</p>
     </div>
   `,
-
     // AMP4Email content (optional, for clients that support AMP)
     amp: `
     <!doctype html>
@@ -221,12 +250,13 @@ router.post("/api/taskadd/email", async (req, res) => {
         <p>Click below to join the team and start collaborating:</p>
         <p>
   
-   <a href="http://192.168.238.17:5173/accept-invite?email=tharunravi672@gmail.com">Accept Invitation</a>
-
-
-   style="display: inline-block; padding: 10px 20px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 5px;">
+<a href="https://beamish-biscotti-b8559d.netlify.app/accept-invite?email=${FindUser.email}">
   Accept Invitation
 </a>
+
+
+
+ 
 
         </p>
         <p>Here's a fun gif for you:</p>
@@ -247,32 +277,57 @@ router.post("/api/taskadd/email", async (req, res) => {
 })
 
 // email
-router.get('/accept-invite', (req, res) => {
-  const email = req.query.email;
-  console.log(`✅ Invite clicked by: ${email}`);
-  
-  // Redirect to your frontend team page (optional)
-  res.redirect('http://192.168.238.17:5173/team');
-});
-
-
-
-// routes/team.js
-router.post("/add", async (req, res) => {
-  const { email } = req.body;
+router.get('/accept-invite', async (req, res) => {
   try {
-    const existing = await Team.findOne({ email });
-    if (existing) {
-      return res.json({ exists: true });
+    const email = req.query.email;
+    const invitedBy = req.query.invited;
+
+    // Find the user by email
+    const GetUser = await User.findOne({ email });
+    if (!GetUser) {
+      return res.status(404).json({ message: "User not found" });
     }
 
-    const newMember = new Team({ email });
-    await newMember.save();
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: "Server error" });
+    const name = GetUser.name;
+
+    // Check if user is already part of a team
+    const isAlreadyInTeam = await Team.findOne({ members: email });
+    if (isAlreadyInTeam) {
+      io.emit("CheckUSerTeam", { message: `Your Team member Is already Exits ${name}` });
+      return res.status(400).json({ message: "User is already part of a team" });
+    }
+
+    // Store the user in the Team collection
+    const Store_team = new Team({
+      Name: name,
+      members: email,
+      invitedBy: invitedBy
+    });
+
+    await Store_team.save();
+
+    io.emit("AcceptInvite", { message: `Your Team member accepted ${name}` });
+
+  } catch (error) {
+    console.error("❌ Error saving team:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// 
+router.get("/api/Task/Member", async (req, res) => {
+  try {
+
+    const data = await Team.find({});
+    io.emit('TotalTeam', { TotalTeam: data });
+    res.json({ message: "Emitted TotalTeam", data });
+  } catch (error) {
+    res.json({ message: error });
   }
 });
 
 
+server.listen(3001, () => {
+  console.log("🚀 Server running on http://localhost:3001");
+});
 module.exports = router;

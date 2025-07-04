@@ -10,7 +10,7 @@ var app = express();
 var cors = require('cors');
 // Enable CORS for all routes
 app.use(cors({
-  origin: '*', // Allow all origins
+  origin: 'http://localhost:5173', // Allow all origins
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   preflightContinue: false,
   optionsSuccessStatus: 204 // For legacy browser support
