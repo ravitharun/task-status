@@ -9,7 +9,7 @@ function Signup() {
   const [Email, SetEmail] = useState("");
   const [Password, SetPassword] = useState("");
   const [ProfileUrl, SetProfile] = useState("");
-  const navigate=useNavigate()
+  const navigate = useNavigate();
   const signInWithGoogle = async () => {
     try {
       // signInWithPopup returns a UserCredential, you might want to use it
@@ -96,6 +96,8 @@ function Signup() {
           progress: undefined,
           theme: "light",
         });
+        localStorage.setItem("Token", response.data.message);
+
         setTimeout(() => {
           navigate("/login");
         }, 1500);
@@ -195,9 +197,10 @@ function Signup() {
               </label>
             </div>
           </div>
-     <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
+          <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
             <a href="/login" class="text-white hover:underline">
-              Do UHhave an account? <strong className="text-red-400">Login In Now</strong>
+              Do UHhave an account?{" "}
+              <strong className="text-red-400">Login In Now</strong>
             </a>
           </div>
           {/* Signup Button */}

@@ -3,8 +3,9 @@ var router = express.Router();
 const bcrypt = require('bcrypt');
 var { User, TaskModel, Team } = require('../bin/Database');
 const nodemailer = require("nodemailer");
-require('dotenv').config();
 const http = require("http");
+const jwt = require("jsonwebtoken");
+
 const app = require("../app"); // Basic Express app
 const server = http.createServer(app);
 const { Server } = require("socket.io");
@@ -16,6 +17,7 @@ const io = new Server(server, {
   },
 });
 
+require('dotenv').config();
 // Configure Nodemailer
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -25,9 +27,26 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Route to handle user signup
-// This route handles user registration by accepting user details, validating them, hashing the password, and saving the user to the database.
+// 1. Create middleware function
+const logger = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  console.log('authHeader,', authHeader)
+  if (!authHeader) return res.status(401).json({ message: "No token provided" });
+  const token = authHeader.split(" ")[1]; // Bearer <token>
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) return res.status(403).json({ message: "Invalid token" });
 
+    req.userId = decoded.userId; // attach userId to request
+    next();
+  });
+};
+
+
+
+
+
+// Route to handle user signup
+// This route handles user registration by accepting user details, validating them, hashing the password, and saving the user to the database. (New user )
 router.post('/api/signup', async function (req, res) {
   try {
     // getting user data from request body
@@ -51,7 +70,7 @@ router.post('/api/signup', async function (req, res) {
     });
 
     await user.save();
-    res.status(200).json({ message: 'Account created successfully!' });
+    res.status(200).json({ message: " Account created successfully!" });
 
   } catch (error) {
     console.error(error);
@@ -61,20 +80,37 @@ router.post('/api/signup', async function (req, res) {
 
 // authentication the user
 router.post('/api/Login', async (req, res) => {
+
   try {
     const { data } = req.body;
+    console.log(data)
     if (!data || !data.Email || !data.Password) {
       return res.status(400).json({ message: 'Please fill all the fields' });
     }
+
     const user = await User.findOne({ email: data.Email });
+
     if (!user) {
-      return res.json({ message: 'User not found' });
+      return res.status(404).json({ message: 'User not found' });
     }
+
     const isMatch = await bcrypt.compare(data.Password, user.Password);
+
     if (!isMatch) {
-      return res.json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
-    res.json({ message: 'Login successful' });
+
+    const token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    res.json({
+      message: token,
+    });
+
+
   } catch (error) {
     console.error(error);
     res.json({ message: 'Server error', error: error.message });
@@ -82,6 +118,13 @@ router.post('/api/Login', async (req, res) => {
 })
 
 
+router.get('/protected', (req, res) => {
+  try {
+
+  } catch (error) {
+    res.json({ message: error })
+  }
+})
 // getting user info
 router.get('/api/user', async (req, res) => {
   const { Email } = req.query;
@@ -96,7 +139,7 @@ router.get('/api/user', async (req, res) => {
 })
 
 // Form route to handle form submission
-router.post('/api/Formdata/submit', async (req, res) => {
+router.post('/api/Formdata/submit', logger, async (req, res) => {
   const { } = req.body
   try {
     // Handle form submission logic here
@@ -108,14 +151,25 @@ router.post('/api/Formdata/submit', async (req, res) => {
   }
 })
 
+// logout router
+
+router.post('/logout/api', (req, res) => {
+  try {
+    const { email } = req.body;
+  } catch (error) {
+    res.json({ message: error })
+  }
+})
 
 
 // Storing the from data and adding the web socket
 // POST route: Save task and emit via Socket.IO
 router.post("/task/api/Data", async (req, res) => {
   const { data } = req.body;
+  console.log(data, 'data')
   if (!data) return res.status(400).json({ message: "No data" });
-
+  const CreatedBy = await User.findOne({ email: data.Add })
+  console.log(CreatedBy)
   try {
     const task_Adding = new TaskModel({
       TaskName: data.TaskName,
@@ -125,12 +179,13 @@ router.post("/task/api/Data", async (req, res) => {
       Type: data.Type,
       Assignee: data.Assignee,
       Schedule: data.Schedule,
+      Add: CreatedBy.name,
       EndSchedule: data.EndSchedule,
       Priority: data.Priority,
     });
 
     await task_Adding.save();
-
+console.log('task_Adding',task_Adding)
     // ✅ Emit actual task data to all clients
     io.emit("Taskadded", {
       message: "✅ New task added!",
@@ -138,7 +193,7 @@ router.post("/task/api/Data", async (req, res) => {
     });
 
 
-    res.status(201).json(task_Adding); // respond to client
+    res.status(201).json({message:task_Adding}); // respond to client
   } catch (error) {
     console.error("❌ Error saving task:", error);
     res.status(500).json({ message: "Failed to save task", error: error.message });
@@ -152,7 +207,7 @@ router.post("/task/api/Data", async (req, res) => {
 router.get('/TaskAll/api', async (req, res) => {
   try {
     const tasks = await TaskModel.find({});
-    res.status(200).json({ message: tasks }); // ✅ return as array
+    res.status(200).json({ message: tasks }); 
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch tasks", error: error.message });
   }
@@ -317,7 +372,7 @@ router.get('/accept-invite', async (req, res) => {
 // 
 router.get("/api/Task/Member", async (req, res) => {
   try {
-
+    // console.log('logger', logger)
     const data = await Team.find({});
     io.emit('TotalTeam', { TotalTeam: data });
     res.json({ message: "Emitted TotalTeam", data });
@@ -325,8 +380,6 @@ router.get("/api/Task/Member", async (req, res) => {
     res.json({ message: error });
   }
 });
-
-
 server.listen(3001, () => {
   console.log("🚀 Server running on http://localhost:3001");
 });

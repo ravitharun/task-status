@@ -5,13 +5,15 @@ import { signInWithPopup } from "firebase/auth";
 import { ToastContainer, toast } from "react-toastify";
 import axios from "axios";
 import CryptoJS from "crypto-js";
+import HorizontalNavbar from "../Horizontalnavbar";
+import Sidebar from "../Sidebar";
 
 function Login() {
   const [UserName, SetUserName] = useState("");
   const [Email, SetEmail] = useState("");
   const [Password, SetPassword] = useState("");
-  const [Login, setLogin] = useState(false);
   const secretKey = "mySecretKey123";
+
   const signInWithGoogle = async () => {
     try {
       // signInWithPopup returns a UserCredential, you might want to use it
@@ -28,15 +30,6 @@ function Login() {
       console.error("Error signing in with Google:", error);
     }
   };
-
-  // const signOut = async () => {
-  //   try {
-  //     await auth.signOut();
-  //   } catch (error) {
-  //     console.error("Error signing out:", error);
-  //   }
-  // };
-
   const Verify = async (event) => {
     event.preventDefault();
     const data = {
@@ -44,6 +37,8 @@ function Login() {
       Email: Email,
       Password: Password,
     };
+
+    // checking password length
     if (Password.length < 6) {
       toast.error("Password must be at least 6 characters long", {
         position: "bottom-left",
@@ -57,6 +52,8 @@ function Login() {
       });
       return;
     }
+
+    // checking the INPUT FILED'S IS EMPTY OR MOT
     if (!UserName || !Email || !Password) {
       toast.error("Please fill all the fields", {
         position: "bottom-left",
@@ -78,23 +75,24 @@ function Login() {
       } else if (response.data.message == "Invalid credentials") {
         toast.error("Invalid credentials");
       } else {
-        setLogin(true);
+       
         const encryptedEmail = CryptoJS.AES.encrypt(
           Email,
           secretKey
         ).toString();
-
+        alert(response.data.message);
         localStorage.setItem("useremail", encryptedEmail);
+        localStorage.setItem("Token", response.data.message);
         toast.success("Login successful");
         window.location.href = "/"; // Redirect to home page after successful login
       }
     }
     localStorage.setItem("Login", Login);
   };
+
   // these function is use to decrpty the useremail stored in loacalStorage
-  const encryptedEmail = localStorage.getItem("useremail");
-  console.log("login", encryptedEmail);
-  // show password function
+  localStorage.getItem("useremail");
+
   // This function toggles the visibility of the password field
   const Showpassword = () => {
     const passwordField = document.getElementById("password");
@@ -107,6 +105,12 @@ function Login() {
   return (
     <>
       <ToastContainer />
+      <div className="fixed top-0 left-0 right-0 z-10">
+        <HorizontalNavbar />
+      </div>{" "}
+      <div className="fixed top-16 left-0 h-[calc(100vh-4rem)] w-64">
+        <Sidebar />
+      </div>
       <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-950 px-4">
         <form className="w-full max-w-md bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-lg space-y-5">
           <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-white">
@@ -183,7 +187,8 @@ function Login() {
           </div>
           <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
             <a href="/CreateAccount" class="text-white hover:underline">
-              Don't have an account? <strong className="text-blue-300">Create one now</strong>
+              Don't have an account?{" "}
+              <strong className="text-blue-300">Create one now</strong>
             </a>
           </div>
 

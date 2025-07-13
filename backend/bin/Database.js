@@ -44,6 +44,7 @@ const Task = mongoose.Schema({
   Status: { type: String, required: true },
   Type: { type: String, required: true },
   Assignee: { type: String, required: true },
+  Add: { type: String },
   Schedule: { type: String, required: true },
   EndSchedule: { type: String, required: true },
   Priority: { type: String, required: true },

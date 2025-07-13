@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import axios from "axios";
 import { useState } from "react";
 import { socket } from "./socket";
+import Authentication from "./Auth/Authentication";
 // import { socket } from "./socket";
 function Team() {
   const [Teammember, setTeam] = useState([]);
@@ -13,7 +14,7 @@ function Team() {
     const teamMembers = async () => {
       const reponse = await axios.get("http://localhost:3000/api/Task/Member");
       setTeam(reponse.data.data);
-      console.log(reponse.data.data, "api call");
+      // console.log(reponse.data.data, "api call");
     };
     teamMembers();
   }, []);
@@ -22,7 +23,6 @@ function Team() {
   useEffect(() => {
     const handleTotalTeam = (TeamMemebr) => {
       setTeam(TeamMemebr.TotalTeam); // Update UI
-      console.log("✅ Updated team received via socket:", TeamMemebr.TotalTeam);
     };
 
     socket.on("TotalTeam", handleTotalTeam);
@@ -33,18 +33,19 @@ function Team() {
   }, []);
 
   const Status = "offline";
+  const Page = "Team";
   return (
     <div className="flex flex-col h-screen bg-amber-50">
       {/* Top Navbar */}
       <div className="fixed top-0 left-0 right-0 z-10">
         <HorizontalNavbar />
       </div>
-
+      <Authentication />
       {/* Sidebar + Main */}
       <div className="flex flex-1 pt-16">
         {/* Sidebar */}
         <div className="fixed top-16 left-0 h-[calc(100vh-4rem)] w-64">
-          <Sidebar />
+          <Sidebar Page={Page} />
         </div>
 
         {/* Main Content */}

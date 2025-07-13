@@ -5,7 +5,7 @@ import CryptoJS from "crypto-js";
 function HorizontalNavbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [UserInfo, Setuserinfo] = useState({});
-
+  const [Login, setlogin] = useState(false);
   const secretKey = "mySecretKey123"; // keep this secret
 
   const toggleDropdown = () => {
@@ -48,12 +48,25 @@ function HorizontalNavbar() {
     GetUserinfo();
   }, []);
 
+  // SignOut
+  const SignOut = () => {
+    try {
+      // 🔐 Remove token from localStorage
+      localStorage.removeItem("Token");
+      setlogin(false);
+      // 🚪 Redirect to login page
+      window.location.href = "/login";
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
+  localStorage.setItem("Login", Login);
   return (
     <nav className="bg-white border-gray-200 dark:bg-gray-900 dark:border-gray-700 shadow-md">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
         {/* Logo */}
-        <a href="#" className="flex items-center space-x-3 rtl:space-x-reverse">  
-          <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white  hover:text-fuchsia-600" >
+        <a href="#" className="flex items-center space-x-3 rtl:space-x-reverse">
+          <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white  hover:text-fuchsia-600">
             TaskNet{" "}
           </span>
         </a>
@@ -120,6 +133,7 @@ function HorizontalNavbar() {
                   <li>
                     <a
                       href="/login"
+                      onClick={SignOut}
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
                     >
                       Sign out

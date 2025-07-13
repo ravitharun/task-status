@@ -5,6 +5,7 @@ import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css"; // Required default styles
 import axios from "axios";
+import Authentication from "./Auth/Authentication";
 
 const localizer = momentLocalizer(moment);
 
@@ -19,7 +20,7 @@ function CalendarPage() {
         const response = await axios.get("http://localhost:3000/TaskAll/api");
         seEvents(response.data.message);
       } catch (err) {
-        console.log(err)
+        console.log(err);
         setError("Failed to load tasks");
       } finally {
         setLoading(false);
@@ -41,7 +42,7 @@ function CalendarPage() {
       <div className="fixed top-0 left-0 right-0 z-10">
         <HorizontalNavbar />
       </div>
-
+      <Authentication />
       {/* Sidebar */}
       <div className="fixed top-16 left-0 h-[calc(100vh-4rem)] w-64">
         <Sidebar />
@@ -79,9 +80,8 @@ function CalendarPage() {
                     <span
                       className="text-sm font-semibold"
                       style={{
-                        color:
-                          event.type === "meeting" ? "red" : "indigo", // green / blue
-                          fontFamily:"inherit"
+                        color: event.type === "meeting" ? "red" : "indigo", // green / blue
+                        fontFamily: "inherit",
                       }}
                     >
                       <i>

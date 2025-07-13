@@ -9,6 +9,8 @@ import Signup from "./Components/Auth/sigup.jsx";
 import Team from "./Components/Team.jsx";
 import Acceptinvite from "./Components/Acceptinvite.jsx";
 import Projects from "./Components/Projects.jsx";
+import Notes from "./Components/Auth/Notes.jsx";
+import Reports from "./Components/Reports.jsx";
 
 createRoot(document.getElementById("root")).render(
   <Router>
@@ -16,10 +18,12 @@ createRoot(document.getElementById("root")).render(
       <Route path="/" element={<Home />} />
       <Route path="/task/Calendar" element={<Calendar />} />
       <Route path="projects" element={<Projects />} />
+      <Route path="reports" element={<Reports />} />
       <Route path="/team" element={<Team />} />
       <Route path="/login" element={<Login />} />
       <Route path="/accept-invite" element={<Acceptinvite />} />
       <Route path="/CreateAccount" element={<Signup />} />
+      <Route path="/task/Notes" element={<Notes />} />
     </Routes>
   </Router>
 );

@@ -8,8 +8,10 @@ import { IoMdClose } from "react-icons/io";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
-
+import CryptoJS from "crypto-js";
 import { socket } from "./socket";
+import QuickNavigation from "./QuickNavigation";
+import Authentication from "./Auth/Authentication";
 function Home() {
   const popupRef = useRef(); // to control popup
   const [TaskName, SettaskName] = useState("");
@@ -32,16 +34,12 @@ function Home() {
     socket.on("Taskadded", (payload) => {
       console.log("taskUpdated", payload);
       toast.success(payload.message);
-      console.log('import { toast } from "react-toastify";', payload.message);
 
       // ✅ Append new task to existing list
       SetTask((prev) => [...prev, payload.data]);
     });
 
     const handleDelete = (data) => {
-      console.log("Info", data);
-      alert(data.message);
-
       // Optional: remove task from UI state if you're storing tasks
       SetTask((prev) => prev.filter((task) => task._id !== data.taskId));
     };
@@ -72,6 +70,7 @@ function Home() {
       try {
         const task_data = await axios.get("http://localhost:3000/TaskAll/api");
         SetTask(task_data.data.message); // ✅ correct
+        console.log(task_data.data.message);
       } catch (error) {
         console.error("❌ Error fetching tasks", error);
         toast.error("Failed to fetch tasks");
@@ -91,9 +90,16 @@ function Home() {
     "Assignee",
     "Schedule",
     "EndSchedule",
+    "TaskaddBY",
     "Priority",
     "Option",
   ];
+  let Invited_Email = localStorage.getItem("useremail");
+  const secretKey = "mySecretKey123";
+  const bytes = CryptoJS.AES.decrypt(Invited_Email, secretKey);
+
+  // Convert bytes to original string
+  const Add = bytes.toString(CryptoJS.enc.Utf8);
 
   // submitting the Task Information to Backend
   const Submit = async () => {
@@ -112,23 +118,23 @@ function Home() {
       Schedule,
       EndSchedule,
       Priority,
+      Add,
       Link,
     };
     console.log(payload);
     try {
       if (TaskEdit?._id) {
         // Editing existing task
-         await axios.put(
+        await axios.put(
           `http://localhost:3000/api/task/update/${TaskEdit._id}`,
           payload
         );
         toast.success("Task updated successfully!");
       } else {
         // Creating new task and sending the data to server
-         await axios.post(
-          "http://localhost:3000/task/api/Data",
-          { data: payload }
-        );
+        await axios.post("http://localhost:3000/task/api/Data", {
+          data: payload,
+        });
       }
       // Refresh task list
       const updated = await axios.get("http://localhost:3000/TaskAll/api");
@@ -159,7 +165,6 @@ function Home() {
   };
   // checking the Active task here
   let Active_task = 11;
-
   // sending the id to backend to remove the task
   const RemoveTask = async (id) => {
     try {
@@ -200,6 +205,7 @@ function Home() {
     setlink(task.Link || "");
     popupRef.current.open();
   };
+  // ✅ Check if the user is logged in by verifying the token
 
   // jsx code HTML
   return (
@@ -208,7 +214,7 @@ function Home() {
       <div className="fixed top-0 left-0 right-0 z-10">
         <HorizontalNavbar />
       </div>
-
+      <Authentication></Authentication>
       {/* Layout with Sidebar */}
       <div className="flex flex-1 pt-16">
         <div className="fixed top-16 left-0 h-[calc(100vh-4rem)] w-64">
@@ -216,16 +222,7 @@ function Home() {
         </div>
 
         <div className="flex-1 ml-64 p- sticky top-16 overflow-y-auto">
-          <a href="/task/Calendar">
-            <button className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-300 hover:text-black transition mt-4 ml-3 ">
-              Calendar
-            </button>
-          </a>
-          <a href="/task/Notes">
-            <button className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-300 hover:text-black transition mt-4 ml-3 ">
-              Notes
-            </button>
-          </a>
+          <QuickNavigation />
           <Popup
             className="bg-black"
             ref={popupRef}
@@ -528,6 +525,7 @@ function Home() {
                       <td className="px-4 py-3">{data.Assignee}</td>
                       <td className="px-4 py-3">{data.Schedule}</td>
                       <td className="px-4 py-3">{data.EndSchedule}</td>
+                      <td className="px-4 py-3">{data.Add}</td>
                       <td className="px-4 py-3">{data.Priority}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
