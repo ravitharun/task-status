@@ -8,22 +8,19 @@ import { socket } from "./socket";
 
 const Reports = () => {
   const [showForm, setShowForm] = useState(false);
-  const [issues, setIssues] = useState([
-    {
-      id: 1,
-      title: "Login Issue",
-      description: "Unable to login with correct credentials.",
-      project: "TaskNet Redesign",
-      assignedTo: "John Doe",
-      Role: "Developer",
-      issueBy: "Tarun",
-      status: "Open",
-    },
-  ]);
+  const [issues, setIssues] = useState([]);
 
   useEffect(() => {
+    const getIssue = async () => {
+      const reponse = await axios.get("http://localhost:3000/api/issues");
+      setIssues(reponse.data.message);
+    };
+    getIssue();
+  }, []);
+
+  // websocket connection to fetch existing issues
+  useEffect(() => {
     socket.on("issueAdded", (data) => {
-      setIssues((prevIssues) => [...prevIssues, data.newIssue]);
       toast.success(data.message);
     });
     return () => {
@@ -111,7 +108,9 @@ const Reports = () => {
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm mb-1" htmlFor="title">Issue Title</label>
+                    <label className="block text-sm mb-1" htmlFor="title">
+                      Issue Title
+                    </label>
                     <input
                       id="title"
                       name="title"
@@ -122,7 +121,9 @@ const Reports = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm mb-1" htmlFor="project">Project Name</label>
+                    <label className="block text-sm mb-1" htmlFor="project">
+                      Project Name
+                    </label>
                     <input
                       id="project"
                       name="project"
@@ -133,7 +134,9 @@ const Reports = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm mb-1" htmlFor="assignedTo">Assigned To</label>
+                    <label className="block text-sm mb-1" htmlFor="assignedTo">
+                      Assigned To
+                    </label>
                     <input
                       id="assignedTo"
                       name="assignedTo"
@@ -144,7 +147,12 @@ const Reports = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm mb-1" htmlFor="assignedToEmail">Assigned To Email</label>
+                    <label
+                      className="block text-sm mb-1"
+                      htmlFor="assignedToEmail"
+                    >
+                      Assigned To Email
+                    </label>
                     <input
                       id="assignedToEmail"
                       name="assignedToEmail"
@@ -155,7 +163,9 @@ const Reports = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm mb-1" htmlFor="status">Status</label>
+                    <label className="block text-sm mb-1" htmlFor="status">
+                      Status
+                    </label>
                     <select
                       id="status"
                       name="status"
@@ -169,7 +179,9 @@ const Reports = () => {
                   </div>
                 </div>
                 <div className="mt-4">
-                  <label className="block text-sm mb-1" htmlFor="description">Description</label>
+                  <label className="block text-sm mb-1" htmlFor="description">
+                    Description
+                  </label>
                   <textarea
                     id="description"
                     name="description"
@@ -201,8 +213,9 @@ const Reports = () => {
                     <th className="px-4 py-3">Project</th>
                     <th className="px-4 py-3">Assigned</th>
                     <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3">Issue By</th>
-                    <th className="px-4 py-3">Role</th>
+                    <th className="px-4 py-3">Issue By Name</th>
+                    <th className="px-4 py-3">Issue By Email</th>
+                    {/* <th className="px-4 py-3">Role</th> */}
                     <th className="px-4 py-3">Action</th>
                   </tr>
                 </thead>
@@ -226,16 +239,35 @@ const Reports = () => {
                           {issue.status}
                         </span>
                       </td>
-                      <td className="px-4 py-3">{issue.issueBy}</td>
-                      <td className="px-4 py-3">{issue.Role}</td>
+                      <td className="px-4 py-3">{issue.Name}</td>
+                      <td className="px-4 py-3">
+                        <a href={`mailto:${issue.Add}`}>{issue.Add}</a>
+                      </td>
+                      {/* <td className="px-4 py-3">{issue.Role}</td> */}
                       <td className="px-4 py-3">
                         {issue.status === "Open" && (
-                          <button
-                            onClick={() => handleResolve(issue.id)}
-                            className="bg-blue-500 text-white text-xs px-3 py-1 rounded hover:bg-blue-600 transition"
-                          >
-                            Mark Resolved
-                          </button>
+                          <>
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => handleResolve(issue.id)}
+                                className="bg-blue-500 text-white text-xs px-3 py-1 rounded hover:bg-blue-600 transition"
+                              >
+                                Edit{" "}
+                              </button>
+                              <button
+                                onClick={() => handleResolve(issue.id)}
+                                className="bg-blue-500 text-white text-xs px-3 py-1 rounded hover:bg-gray-600 transition"
+                              >
+                                Mark Resolved
+                              </button>
+                              <button
+                                onClick={() => handleResolve(issue.id)}
+                                className="bg-blue-500 text-white text-xs px-3 py-1 rounded hover:bg-orange-800 transition"
+                              >
+                                Remove{" "}
+                              </button>
+                            </div>
+                          </>
                         )}
                       </td>
                     </tr>
