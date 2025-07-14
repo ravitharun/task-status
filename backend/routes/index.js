@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 const bcrypt = require('bcrypt');
-var { User, TaskModel, Team } = require('../bin/Database');
+var { User, TaskModel, Team, Issues } = require('../bin/Database');
 const nodemailer = require("nodemailer");
 const http = require("http");
 const jwt = require("jsonwebtoken");
@@ -185,7 +185,7 @@ router.post("/task/api/Data", async (req, res) => {
     });
 
     await task_Adding.save();
-console.log('task_Adding',task_Adding)
+    console.log('task_Adding', task_Adding)
     // ✅ Emit actual task data to all clients
     io.emit("Taskadded", {
       message: "✅ New task added!",
@@ -193,7 +193,7 @@ console.log('task_Adding',task_Adding)
     });
 
 
-    res.status(201).json({message:task_Adding}); // respond to client
+    res.status(201).json({ message: task_Adding }); // respond to client
   } catch (error) {
     console.error("❌ Error saving task:", error);
     res.status(500).json({ message: "Failed to save task", error: error.message });
@@ -207,7 +207,7 @@ console.log('task_Adding',task_Adding)
 router.get('/TaskAll/api', async (req, res) => {
   try {
     const tasks = await TaskModel.find({});
-    res.status(200).json({ message: tasks }); 
+    res.status(200).json({ message: tasks });
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch tasks", error: error.message });
   }
@@ -378,6 +378,49 @@ router.get("/api/Task/Member", async (req, res) => {
     res.json({ message: "Emitted TotalTeam", data });
   } catch (error) {
     res.json({ message: error });
+  }
+});
+
+
+// /api/issues
+router.post('/api/issues', async (req, res) => {
+
+  const { newIssue, Add } = req.body;
+  if (!newIssue.title || !newIssue.description || !newIssue.project || !newIssue.assignedTo) {
+    return res.status(400).json({ message: 'Please fill all fields' });
+  }
+
+  const userfind = await User.findOne({ email: Add });
+  console.log(userfind, 'userfind')
+
+  const issue = new Issues({
+    title: newIssue.title,
+    project: newIssue.project,
+    assignedTo: newIssue.assignedTo,
+    status: newIssue.status || "Open",
+    description: newIssue.description,
+    Add: Add, // Store the email of the user who created the issue
+    Name: userfind.name
+  });
+  await issue.save()
+  io.emit("issueAdded", {
+    message: "✅ New Issue added! by " + userfind.name,
+    newIssue,
+    Add,
+  });
+
+
+})
+
+
+
+// get all issues
+router.get('/api/issues', async (req, res) => {
+  try {
+    const issues = await Issues.find({});
+    res.status(200).json({ message: issues });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch issues", error: error.message });
   }
 });
 server.listen(3001, () => {

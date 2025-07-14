@@ -54,20 +54,32 @@ const Task = mongoose.Schema({
 
 const TeamSchema = new mongoose.Schema({
   Name: { type: String, default: "Jon Dev" },
-  members: { type:String }, // an array of emails
+  members: { type: String }, // an array of emails
   invitedBy: {
     type: String,
     default: "tr55@gmail.com"
   },
-    createdAt: {
+  createdAt: {
     type: Date,
     default: Date.now,
   },
 });
+const issues = new mongoose.Schema({
+  title: { type: String, required: true },
+  project: { type: String, required: true },
+  assignedTo: { type: String, required: true },
+  status: { type: String, default: "Open" },
+  description: { type: String, required: true },
+  Add: { type: String },
+  Name: { type: String, required: true }, // Store the name of the user who created the issue
+}, { timestamps: true });
+
+
 
 // Create and export the User model
 const User = mongoose.model('User', userSchema);
 const TaskModel = mongoose.model('Task', Task)
 const Team = mongoose.model('TeamSchema', TeamSchema)
+const Issues = mongoose.model('Issues', issues);
 
-module.exports = { User, TaskModel, Team };
+module.exports = { User, TaskModel, Team, Issues };

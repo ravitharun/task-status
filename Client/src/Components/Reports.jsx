@@ -1,6 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import HorizontalNavbar from "./Horizontalnavbar";
 import Sidebar from "./Sidebar";
+import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import CryptoJS from "crypto-js";
+import { socket } from "./socket";
+
 const Reports = () => {
   const [showForm, setShowForm] = useState(false);
   const [issues, setIssues] = useState([
@@ -10,15 +15,28 @@ const Reports = () => {
       description: "Unable to login with correct credentials.",
       project: "TaskNet Redesign",
       assignedTo: "John Doe",
+      Role: "Developer",
+      issueBy: "Tarun",
       status: "Open",
     },
   ]);
+
+  useEffect(() => {
+    socket.on("issueAdded", (data) => {
+      setIssues((prevIssues) => [...prevIssues, data.newIssue]);
+      toast.success(data.message);
+    });
+    return () => {
+      socket.off("issueAdded");
+    };
+  }, []);
 
   const [newIssue, setNewIssue] = useState({
     title: "",
     description: "",
     project: "",
     assignedTo: "",
+    assignedToEmail: "",
     status: "Open",
   });
 
@@ -26,21 +44,33 @@ const Reports = () => {
     setNewIssue({ ...newIssue, [e.target.name]: e.target.value });
   };
 
-  const handleAddIssue = () => {
-    if (newIssue.title.trim()) {
-      setIssues([
-        ...issues,
-        { ...newIssue, id: Date.now() },
-      ]);
-      setNewIssue({
-        title: "",
-        description: "",
-        project: "",
-        assignedTo: "",
-        status: "Open",
-      });
-      setShowForm(false);
+  let Invited_Email = localStorage.getItem("useremail");
+  const secretKey = "mySecretKey123";
+  const bytes = CryptoJS.AES.decrypt(Invited_Email, secretKey);
+  const Add = bytes.toString(CryptoJS.enc.Utf8);
+
+  const handleAddIssue = async () => {
+    if (
+      !newIssue.title ||
+      !newIssue.description ||
+      !newIssue.project ||
+      !newIssue.assignedTo
+    ) {
+      toast.info("Please fill all fields");
+      return;
     }
+
+    const response = await axios.post("http://localhost:3000/api/issues", {
+      newIssue,
+      Add,
+    });
+
+    socket.emit("issueAdded", {
+      newIssue,
+      Add,
+    });
+
+    toast.success(response.data.message);
   };
 
   const handleResolve = (id) => {
@@ -52,27 +82,21 @@ const Reports = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 to-amber-50">
-      {/* Top Navbar */}
       <div className="fixed top-0 left-0 right-0 z-10">
         <HorizontalNavbar />
       </div>
 
-      {/* Sidebar + Main */}
       <div className="flex pt-16">
-        {/* Sidebar */}
         <div className="fixed top-16 left-0 h-[calc(100vh-4rem)] w-64">
           <Sidebar />
         </div>
 
-        {/* Main Content */}
         <div className="ml-64 w-full px-4 py-6 sm:px-8">
-          
-
           <div className="max-w-6xl mx-auto mt-4">
             <h1 className="text-3xl font-bold text-gray-800 mb-4">
               📝 Reports & Issues
             </h1>
-
+            <ToastContainer />
             <button
               onClick={() => setShowForm(!showForm)}
               className="mb-6 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
@@ -80,52 +104,82 @@ const Reports = () => {
               {showForm ? "Cancel" : "➕ Add Issue"}
             </button>
 
-            {/* Issue Form */}
             {showForm && (
               <div className="bg-white border border-gray-200 p-6 rounded-lg shadow-sm mb-8">
                 <h2 className="text-xl font-semibold mb-4 text-gray-700">
                   Add New Issue
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <input
-                    name="title"
-                    value={newIssue.title}
-                    onChange={handleChange}
-                    placeholder="Issue Title"
-                    className="border border-gray-300 p-2 rounded-md"
-                  />
-                  <input
-                    name="project"
-                    value={newIssue.project}
-                    onChange={handleChange}
-                    placeholder="Project Name"
-                    className="border border-gray-300 p-2 rounded-md"
-                  />
-                  <input
-                    name="assignedTo"
-                    value={newIssue.assignedTo}
-                    onChange={handleChange}
-                    placeholder="Assigned To"
-                    className="border border-gray-300 p-2 rounded-md"
-                  />
-                  <select
-                    name="status"
-                    value={newIssue.status}
-                    onChange={handleChange}
-                    className="border border-gray-300 p-2 rounded-md"
-                  >
-                    <option>Open</option>
-                    <option>Resolved</option>
-                  </select>
+                  <div>
+                    <label className="block text-sm mb-1" htmlFor="title">Issue Title</label>
+                    <input
+                      id="title"
+                      name="title"
+                      value={newIssue.title}
+                      onChange={handleChange}
+                      placeholder="Enter issue title"
+                      className="w-full border border-gray-300 p-2 rounded-md"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm mb-1" htmlFor="project">Project Name</label>
+                    <input
+                      id="project"
+                      name="project"
+                      value={newIssue.project}
+                      onChange={handleChange}
+                      placeholder="Project name"
+                      className="w-full border border-gray-300 p-2 rounded-md"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm mb-1" htmlFor="assignedTo">Assigned To</label>
+                    <input
+                      id="assignedTo"
+                      name="assignedTo"
+                      value={newIssue.assignedTo}
+                      onChange={handleChange}
+                      placeholder="Assigned person name"
+                      className="w-full border border-gray-300 p-2 rounded-md"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm mb-1" htmlFor="assignedToEmail">Assigned To Email</label>
+                    <input
+                      id="assignedToEmail"
+                      name="assignedToEmail"
+                      value={newIssue.assignedToEmail}
+                      onChange={handleChange}
+                      placeholder="example@email.com"
+                      className="w-full border border-gray-300 p-2 rounded-md"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm mb-1" htmlFor="status">Status</label>
+                    <select
+                      id="status"
+                      name="status"
+                      value={newIssue.status}
+                      onChange={handleChange}
+                      className="w-full border border-gray-300 p-2 rounded-md"
+                    >
+                      <option>Open</option>
+                      <option>Resolved</option>
+                    </select>
+                  </div>
                 </div>
-                <textarea
-                  name="description"
-                  value={newIssue.description}
-                  onChange={handleChange}
-                  placeholder="Issue Description"
-                  className="w-full mt-4 border border-gray-300 p-2 rounded-md"
-                  rows={3}
-                />
+                <div className="mt-4">
+                  <label className="block text-sm mb-1" htmlFor="description">Description</label>
+                  <textarea
+                    id="description"
+                    name="description"
+                    value={newIssue.description}
+                    onChange={handleChange}
+                    placeholder="Describe the issue in detail"
+                    className="w-full border border-gray-300 p-2 rounded-md"
+                    rows={4}
+                  />
+                </div>
                 <button
                   onClick={handleAddIssue}
                   className="mt-4 bg-green-600 text-white px-5 py-2 rounded hover:bg-green-700 transition"
@@ -135,7 +189,6 @@ const Reports = () => {
               </div>
             )}
 
-            {/* Issues Table */}
             <h2 className="text-xl font-semibold mb-3 text-gray-700">
               Reported Issues ({issues.length})
             </h2>
@@ -148,6 +201,8 @@ const Reports = () => {
                     <th className="px-4 py-3">Project</th>
                     <th className="px-4 py-3">Assigned</th>
                     <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">Issue By</th>
+                    <th className="px-4 py-3">Role</th>
                     <th className="px-4 py-3">Action</th>
                   </tr>
                 </thead>
@@ -171,6 +226,8 @@ const Reports = () => {
                           {issue.status}
                         </span>
                       </td>
+                      <td className="px-4 py-3">{issue.issueBy}</td>
+                      <td className="px-4 py-3">{issue.Role}</td>
                       <td className="px-4 py-3">
                         {issue.status === "Open" && (
                           <button
