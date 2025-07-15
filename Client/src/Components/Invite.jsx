@@ -6,16 +6,17 @@ import CryptoJS from "crypto-js";
 import axios from "axios";
 import { useEffect } from "react";
 import { socket } from "./socket";
+import { toast } from "react-toastify";
 function Invite() {
   const [Email, Setemail] = useState("");
   const navigate = useNavigate();
   useEffect(() => {
     const reponseemail = () => {
       socket.on("AcceptInvite", (dataMessage) => {
-        alert(dataMessage.message);
+        toast.s(dataMessage.message);
       });
       socket.on("CheckUSerTeam", (dataMessage) => {
-        alert(dataMessage.message);
+        toast.info(dataMessage.message);
       });
     };
     reponseemail();

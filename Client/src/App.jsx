@@ -26,6 +26,15 @@ function App() {
 
       // ✅ Append new task to existing list
     });
+    const reponseemail = () => {
+      socket.on("AcceptInvite", (dataMessage) => {
+        toast.success(dataMessage.message);
+      });
+      socket.on("CheckUSerTeam", (dataMessage) => {
+        toast.info(dataMessage.message);
+      });
+    };
+    reponseemail();
 
     return () => {
       socket.off("issueAdded");
@@ -42,6 +51,7 @@ function App() {
         <Route path="/reports" element={<Reports />} />
         <Route path="/team" element={<Team />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/CreateAccount" element={<Signup />} />
         <Route path="/accept-invite" element={<Acceptinvite />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/notes" element={<Notes />} />

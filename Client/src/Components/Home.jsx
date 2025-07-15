@@ -70,7 +70,6 @@ function Home() {
       try {
         const task_data = await axios.get("http://localhost:3000/TaskAll/api");
         SetTask(task_data.data.message); // ✅ correct
-        console.log(task_data.data.message);
       } catch (error) {
         console.error("❌ Error fetching tasks", error);
         toast.error("Failed to fetch tasks");
@@ -256,7 +255,12 @@ function Home() {
                     {/* Your form or content here */}
                   </div>
 
-                  <form className="grid md:grid-cols-2 gap-8">
+                  <form
+                    className="grid md:grid-cols-2 gap-8"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") Submit();
+                    }}
+                  >
                     {/* Left Form */}
                     <div className="space-y-6">
                       <div>

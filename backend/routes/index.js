@@ -9,6 +9,7 @@ const jwt = require("jsonwebtoken");
 const app = require("../app"); // Basic Express app
 const server = http.createServer(app);
 const { Server } = require("socket.io");
+const { log } = require('console');
 const SECRET_KEY = process.env.SECRET_KEY;
 const io = new Server(server, {
   cors: {
@@ -380,6 +381,26 @@ router.get("/api/Task/Member", async (req, res) => {
     res.json({ message: error });
   }
 });
+
+// remove team member
+router.delete('/api/Task/Member/:id', async (req, res) => {
+  try {
+    const memberId = req.params.id;
+    if (!memberId) {
+      return res.status(400).json({ message: 'Member ID is required' });
+    }
+    const remove = await Team.findByIdAndDelete(memberId);
+    io.emit('RemoveTeamMember', { message: `Team member with ID ${memberId} has been removed` });
+
+    // Emit the updated team list to all clients
+
+    res.status(200).json({ message: memberId })
+
+  } catch (error) {
+    console.log(error, 'error')
+  }
+})
+
 
 
 // /api/issues

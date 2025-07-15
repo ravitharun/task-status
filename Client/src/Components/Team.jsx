@@ -7,9 +7,11 @@ import axios from "axios";
 import { useState } from "react";
 import { socket } from "./socket";
 import Authentication from "./Auth/Authentication";
+import { toast } from "react-toastify";
 // import { socket } from "./socket";
 function Team() {
   const [Teammember, setTeam] = useState([]);
+
   useEffect(() => {
     const teamMembers = async () => {
       const reponse = await axios.get("http://localhost:3000/api/Task/Member");
@@ -26,11 +28,35 @@ function Team() {
     };
 
     socket.on("TotalTeam", handleTotalTeam);
-
+    socket.on("RemoveTeamMember", (data) => {
+      toast.info("Team member removed:", data.message);
+    });
     return () => {
       socket.off("TotalTeam", handleTotalTeam); // Cleanup
     };
   }, []);
+
+  // Function to remove team member
+  const ReomeveTeamMember = async (id) => {
+    try {
+
+      const response = await axios.delete(
+        `http://localhost:3000/api/Task/Member/${id}`
+      );
+      console.log(response.data.message, "response from backend");
+      if (response.status === 200) {
+        // Successfully removed team member
+        setTeam((prevMembers) =>
+          prevMembers.filter((member) => member.id !== id)
+        );
+        console.log("Team member removed successfully");
+      } else {
+        console.error("Failed to remove team member");
+      }
+    } catch (error) {
+      console.error("Error removing team member:", error);
+    }
+  };
 
   const Status = "offline";
   const Page = "Team";
@@ -157,11 +183,7 @@ function Team() {
                     <td>
                       <button
                         className="px-3 py-1 text-sm bg-red-500 text-white rounded-md hover:bg-red-600"
-                        onClick={() =>
-                          alert(
-                            "removing the team member and also send emil to the user"
-                          )
-                        }
+                        onClick={() => ReomeveTeamMember(member._id)}
                         title="Remove Team Member"
                         style={{ cursor: "pointer" }}
                       >
