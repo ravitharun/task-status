@@ -26,8 +26,14 @@ const Reports = () => {
     socket.on("issueUpdated", (data) => {
       toast.info(data.message);
     });
+    const handelRemovedissue = (data) => {
+      toast.info(data.message);
+    };
+
+    socket.on("issueDeleted", handelRemovedissue);
     return () => {
       socket.off("issueAdded");
+      socket.off("issueUpdated");
     };
   }, []);
 
@@ -68,6 +74,22 @@ const Reports = () => {
       issue.id === id ? { ...issue, status: "Resolved" } : issue
     );
     setIssues(updated);
+  };
+
+  // const removeIssue Data
+  const handleRemoveIssue = async (id) => {
+    console.log(id, "id remove");
+    try {
+       await axios.delete(
+        `http://localhost:3000/api/report/delete/${id}`
+      );
+    } catch (error) {
+      // toast.error("Error removing issue: " + error.message);
+      console.log(error.message,"error.message");
+      
+    }
+    const updatedIssues = issues.filter((issue) => issue._id !== id);
+    setIssues(updatedIssues);
   };
 
   const handleEditreport = async (id) => {
@@ -114,11 +136,12 @@ const Reports = () => {
           assignedToEmail: newIssue.assignedToEmail,
           status: newIssue.status,
           userEmail: userEmail, // optional if you're tracking user
-          
         }
       );
 
-      toast.success(response.data.message);
+      setTimeout(() => {
+        toast.success(response.data.message);
+      }, 3000);
       setShowForm(false);
       Setedit(false);
       setNewIssue({
@@ -341,7 +364,7 @@ const Reports = () => {
                                 Mark Resolved
                               </button>
                               <button
-                                onClick={() => handleResolve(issue._id)}
+                                onClick={() => handleRemoveIssue(issue._id)}
                                 className="bg-blue-500 text-white text-xs px-3 py-1 rounded hover:bg-orange-800 transition"
                               >
                                 Remove{" "}

@@ -16,46 +16,54 @@ import Reports from "./Components/Reports.jsx";
 import "./index.css";
 
 function App() {
-useEffect(() => {
-  const handleIssueAdded = (data) => {
-    toast.success(data.message);
-  };
+  useEffect(() => {
+    const handleIssueAdded = (data) => {
+      toast.success(data.message);
+    };
 
-  const handleTaskAdded = (payload) => {
-    console.log("taskUpdated", payload);
-    toast.success(payload.message);
-  };
+    const handleTaskAdded = (payload) => {
+      console.log("taskUpdated", payload);
+      toast.success(payload.message);
+    };
 
-  const handleAcceptInvite = (dataMessage) => {
-    toast.success(dataMessage.message);
-  };
+    const handleAcceptInvite = (dataMessage) => {
+      toast.success(dataMessage.message);
+    };
 
-  const handleCheckUserTeam = (dataMessage) => {
-    toast.info(dataMessage.message);
-  };
+    const handleCheckUserTeam = (dataMessage) => {
+      toast.info(dataMessage.message);
+    };
 
-  const handleIssueUpdated = (data) => {
-    toast.info(data.message);
-    Navigate('/reports')
-  };
+    const handleIssueUpdated = (data) => {
+      toast.info(data.message);
+      Navigate("/reports");
+    };
+    const handelRemovedissue = (data) => {
+      toast.info(data.message);
+    };
+    const handelTotalTeam = (data) => {
+      toast.info(data.message);
+    };
 
-  // Register socket listeners
-  socket.on("issueAdded", handleIssueAdded);
-  socket.on("Taskadded", handleTaskAdded);
-  socket.on("AcceptInvite", handleAcceptInvite);
-  socket.on("CheckUSerTeam", handleCheckUserTeam);
-  socket.on("issueUpdated", handleIssueUpdated);
+    // Register socket listeners
+    socket.on("issueAdded", handleIssueAdded);
+    socket.on("Taskadded", handleTaskAdded);
+    socket.on("AcceptInvite", handleAcceptInvite);
+    socket.on("CheckUSerTeam", handleCheckUserTeam);
+    socket.on("issueUpdated", handleIssueUpdated);
 
-  // Clean up all listeners
-  return () => {
-    socket.off("issueAdded", handleIssueAdded);
-    socket.off("Taskadded", handleTaskAdded);
-    socket.off("AcceptInvite", handleAcceptInvite);
-    socket.off("CheckUSerTeam", handleCheckUserTeam);
-    socket.off("issueUpdated", handleIssueUpdated);
-  };
-}, []);
-
+    socket.on("issueDeleted", handelRemovedissue);
+    socket.on("TotalTeam", handelTotalTeam);
+    // Clean up all listeners
+    return () => {
+      socket.off("issueAdded", handleIssueAdded);
+      socket.off("Taskadded", handleTaskAdded);
+      socket.off("AcceptInvite", handleAcceptInvite);
+      socket.off("issueDeleted", handelRemovedissue);
+      socket.off("CheckUSerTeam", handleCheckUserTeam);
+      socket.off("issueUpdated", handleIssueUpdated);
+    };
+  }, []);
 
   return (
     <>

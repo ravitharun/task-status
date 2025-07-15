@@ -72,6 +72,33 @@ router.post('/api/signup', async function (req, res) {
 
     await user.save();
     res.status(200).json({ message: " Account created successfully!" });
+    // Emit the new user data to all clients
+    io.emit("TotalTeam", { TotalTeam: user });
+    // and also new feature like sending email to the user created
+    const message = {
+      from: "tr565003@gmail.com",
+      to: data.Email,
+      subject: "Welcome to TaskNest!",
+      text: `Hello ${data.UserName},\n\nThank you for signing up for TaskNest! We're excited to have you on board.\n\nBest regards,\nThe TaskNest Team`,
+      html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <h2>Welcome to TaskNest, ${data.UserName}!</h2>
+        <p>Thank you for signing up! We're excited to have you on board.</p
+        <p>Click the button below to log in and start managing your tasks:</p>
+        <a href="http://localhost:5173/login" style="display: inline-block; padding: 10px 20px; background-color: #28a745; color:
+  #fff; text-decoration: none; border-radius: 5px;">Log In</a>
+        <p>Best regards,<br/>The TaskNest Team</p>
+      </div>
+    `,
+    };
+    transporter.sendMail(message, (error, info) => {
+      if (error) {
+        console.error("Email error:", error);
+      } else {
+        console.log("Email sent: " + info.response);
+      }
+    });
+
 
   } catch (error) {
     console.error(error);
@@ -140,27 +167,19 @@ router.get('/api/user', async (req, res) => {
 })
 
 // Form route to handle form submission
-router.post('/api/Formdata/submit', logger, async (req, res) => {
-  const { } = req.body
-  try {
-    // Handle form submission logic here
-    // For example, save the form data to the database
-    res.status(200).json({ message: 'Form submitted successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-})
+// router.post('/api/Formdata/submit', logger, async (req, res) => {
+//   const { } = req.body
+//   try {
+//     // Handle form submission logic here
+//     // For example, save the form data to the database
+//     res.status(200).json({ message: 'Form submitted successfully' });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Server error', error: error.message });
+//   }
+// })
 
-// logout router
 
-router.post('/logout/api', (req, res) => {
-  try {
-    const { email } = req.body;
-  } catch (error) {
-    res.json({ message: error })
-  }
-})
 
 
 // Storing the from data and adding the web socket
@@ -189,7 +208,7 @@ router.post("/task/api/Data", async (req, res) => {
     console.log('task_Adding', task_Adding)
     // ✅ Emit actual task data to all clients
     io.emit("Taskadded", {
-      message: "✅ New task added!",
+      message: "✅ New task added!  by Your Team Member " + CreatedBy.name,
       data: task_Adding, // the saved task object
     });
 
@@ -226,7 +245,7 @@ router.get("/api/task/Remove", async (req, res) => {
     if (!deletedTask) {
       return res.status(404).json({ message: "Task not found" });
     }
-    io.emit("taskDeleted", { message: "Task deleted by Tharun" });
+    io.emit("taskDeleted", { message: "Task deleted  by Your Team Member" });
 
   } catch (error) {
     console.error(error);
@@ -424,7 +443,7 @@ router.post('/api/issues', async (req, res) => {
   });
   await issue.save()
   io.emit("issueAdded", {
-    message: " New Issue added! by " + userfind.name,
+    message: " New Issue added!  by Your Team Member  " + userfind.name,
     newIssue,
     userEmail,
   });
@@ -481,7 +500,7 @@ router.put("/api/issues/edit/:id", async (req, res) => {
     const User_name = await User.findOne({ email: req.body.userEmail });
 
     io.emit("issueUpdated", {
-      message: `Issue updated successfully by${User_name.name}`,
+      message: `Issue updated successfully by Your Team Member ${User_name.name}`,
     });
 
     res.status(200).json({ message: "Issue updated successfully", data: updatedIssue });
@@ -491,6 +510,24 @@ router.put("/api/issues/edit/:id", async (req, res) => {
   }
 });
 
+
+router.delete('/api/report/delete/:id', async (req, res) => {
+  const { id } = req.params
+  if (!id) {
+    return res.status(400).json({ message: 'ID is required' });
+  }
+  try {
+    const deletedIssue = await Issues.findByIdAndDelete(id);
+    if (!deletedIssue) {
+      return res.status(404).json({ message: 'Issue not found' });
+    }
+    io.emit("issueDeleted", { message: "Issue deleted successfully By Your Team Member" });
+    res.status(200).json({ message: "Issue deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting issue:", error);
+    res.status(500).json({ message: "Failed to delete issue", error: error.message });
+  }
+});
 
 server.listen(3001, () => {
   console.log("🚀 Server running on http://localhost:3001");
