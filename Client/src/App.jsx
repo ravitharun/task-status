@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Routes, Route } from "react-router-dom"; // ✅ No 'Router' here
+import { Routes, Route, Navigate } from "react-router-dom"; // ✅ No 'Router' here
 import { ToastContainer, toast } from "react-toastify";
 import { socket } from "./Components/socket";
 
@@ -16,30 +16,46 @@ import Reports from "./Components/Reports.jsx";
 import "./index.css";
 
 function App() {
-  useEffect(() => {
-    socket.on("issueAdded", (data) => {
-      toast.success(data.message);
-    });
-    socket.on("Taskadded", (payload) => {
-      console.log("taskUpdated", payload);
-      toast.success(payload.message);
+useEffect(() => {
+  const handleIssueAdded = (data) => {
+    toast.success(data.message);
+  };
 
-      // ✅ Append new task to existing list
-    });
-    const reponseemail = () => {
-      socket.on("AcceptInvite", (dataMessage) => {
-        toast.success(dataMessage.message);
-      });
-      socket.on("CheckUSerTeam", (dataMessage) => {
-        toast.info(dataMessage.message);
-      });
-    };
-    reponseemail();
+  const handleTaskAdded = (payload) => {
+    console.log("taskUpdated", payload);
+    toast.success(payload.message);
+  };
 
-    return () => {
-      socket.off("issueAdded");
-    };
-  }, []);
+  const handleAcceptInvite = (dataMessage) => {
+    toast.success(dataMessage.message);
+  };
+
+  const handleCheckUserTeam = (dataMessage) => {
+    toast.info(dataMessage.message);
+  };
+
+  const handleIssueUpdated = (data) => {
+    toast.info(data.message);
+    Navigate('/reports')
+  };
+
+  // Register socket listeners
+  socket.on("issueAdded", handleIssueAdded);
+  socket.on("Taskadded", handleTaskAdded);
+  socket.on("AcceptInvite", handleAcceptInvite);
+  socket.on("CheckUSerTeam", handleCheckUserTeam);
+  socket.on("issueUpdated", handleIssueUpdated);
+
+  // Clean up all listeners
+  return () => {
+    socket.off("issueAdded", handleIssueAdded);
+    socket.off("Taskadded", handleTaskAdded);
+    socket.off("AcceptInvite", handleAcceptInvite);
+    socket.off("CheckUSerTeam", handleCheckUserTeam);
+    socket.off("issueUpdated", handleIssueUpdated);
+  };
+}, []);
+
 
   return (
     <>

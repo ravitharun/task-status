@@ -403,16 +403,15 @@ router.delete('/api/Task/Member/:id', async (req, res) => {
 
 
 
-// /api/issues
+// adding the issues
 router.post('/api/issues', async (req, res) => {
 
-  const { newIssue, Add } = req.body;
+  const { newIssue, userEmail } = req.body;
   if (!newIssue.title || !newIssue.description || !newIssue.project || !newIssue.assignedTo) {
     return res.status(400).json({ message: 'Please fill all fields' });
   }
 
-  const userfind = await User.findOne({ email: Add });
-  console.log(userfind, 'userfind')
+  const userfind = await User.findOne({ email: userEmail });
 
   const issue = new Issues({
     title: newIssue.title,
@@ -420,14 +419,14 @@ router.post('/api/issues', async (req, res) => {
     assignedTo: newIssue.assignedTo,
     status: newIssue.status || "Open",
     description: newIssue.description,
-    Add: Add, // Store the email of the user who created the issue
+    Add: userEmail, // Store the email of the user who created the issue
     Name: userfind.name
   });
   await issue.save()
   io.emit("issueAdded", {
-    message: "✅ New Issue added! by " + userfind.name,
+    message: " New Issue added! by " + userfind.name,
     newIssue,
-    Add,
+    userEmail,
   });
 
 
@@ -444,6 +443,55 @@ router.get('/api/issues', async (req, res) => {
     res.status(500).json({ message: "Failed to fetch issues", error: error.message });
   }
 });
+
+
+
+
+
+// editing the issues
+router.get('/api/issues/edit/:id', async (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    return res.status(400).json({ message: 'ID is required' });
+  }
+  let Issues_Data = await Issues.findById({ _id: id });
+  if (!Issues_Data) {
+    return res.status(404).json({ message: 'Issue not found' });
+  }
+  res.json({ message: Issues_Data });
+})
+
+
+
+// Backend: Update issue by ID
+router.put("/api/issues/edit/:id", async (req, res) => {
+  try {
+
+
+    const updatedIssue = await Issues.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedIssue) {
+      return res.status(404).json({ message: "Issue not found" });
+    }
+    // req.body.userEmail
+    const User_name = await User.findOne({ email: req.body.userEmail });
+
+    io.emit("issueUpdated", {
+      message: `Issue updated successfully by${User_name.name}`,
+    });
+
+    res.status(200).json({ message: "Issue updated successfully", data: updatedIssue });
+  } catch (error) {
+    console.error("Error in PUT /edit/:id:", error);
+    res.status(500).json({ message: "Error updating issue", error: error.message });
+  }
+});
+
+
 server.listen(3001, () => {
   console.log("🚀 Server running on http://localhost:3001");
 });

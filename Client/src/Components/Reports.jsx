@@ -3,12 +3,13 @@ import HorizontalNavbar from "./Horizontalnavbar";
 import Sidebar from "./Sidebar";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
-import CryptoJS from "crypto-js";
 import { socket } from "./socket";
+import { userEmail } from "./Email";
 
 const Reports = () => {
   const [showForm, setShowForm] = useState(false);
   const [issues, setIssues] = useState([]);
+  const [Editting, Setedit] = useState(false);
 
   useEffect(() => {
     const getIssue = async () => {
@@ -17,11 +18,13 @@ const Reports = () => {
     };
     getIssue();
   }, []);
-
   // websocket connection to fetch existing issues
   useEffect(() => {
     socket.on("issueAdded", (data) => {
       toast.success(data.message);
+    });
+    socket.on("issueUpdated", (data) => {
+      toast.info(data.message);
     });
     return () => {
       socket.off("issueAdded");
@@ -41,11 +44,6 @@ const Reports = () => {
     setNewIssue({ ...newIssue, [e.target.name]: e.target.value });
   };
 
-  let Invited_Email = localStorage.getItem("useremail");
-  const secretKey = "mySecretKey123";
-  const bytes = CryptoJS.AES.decrypt(Invited_Email, secretKey);
-  const Add = bytes.toString(CryptoJS.enc.Utf8);
-
   const handleAddIssue = async () => {
     if (
       !newIssue.title ||
@@ -59,12 +57,7 @@ const Reports = () => {
 
     const response = await axios.post("http://localhost:3000/api/issues", {
       newIssue,
-      Add,
-    });
-
-    socket.emit("issueAdded", {
-      newIssue,
-      Add,
+      userEmail,
     });
 
     toast.success(response.data.message);
@@ -75,6 +68,84 @@ const Reports = () => {
       issue.id === id ? { ...issue, status: "Resolved" } : issue
     );
     setIssues(updated);
+  };
+
+  const handleEditreport = async (id) => {
+    console.log(id, "id");
+    try {
+      const reponse = await axios.get(
+        `http://localhost:3000/api/issues/edit/${id}`
+      );
+
+      setNewIssue({
+        _id: reponse.data.message._id,
+        title: reponse.data.message.title,
+        description: reponse.data.message.description,
+        project: reponse.data.message.project,
+        assignedTo: reponse.data.message.assignedTo,
+        assignedToEmail: reponse.data.message.assignedToEmail,
+        status: reponse.data.message.status,
+      });
+      setShowForm(true);
+      Setedit(true);
+    } catch (error) {
+      toast.info(error.message, "error from edit report");
+    }
+  };
+
+  const handleUpdateIssue = async () => {
+    if (
+      !newIssue.title ||
+      !newIssue.description ||
+      !newIssue.project ||
+      !newIssue.assignedTo
+    ) {
+      toast.info("Please fill all fields");
+      return;
+    }
+    try {
+      const response = await axios.put(
+        `http://localhost:3000/api/issues/edit/${newIssue._id}`,
+        {
+          title: newIssue.title,
+          description: newIssue.description,
+          project: newIssue.project,
+          assignedTo: newIssue.assignedTo,
+          assignedToEmail: newIssue.assignedToEmail,
+          status: newIssue.status,
+          userEmail: userEmail, // optional if you're tracking user
+          
+        }
+      );
+
+      toast.success(response.data.message);
+      setShowForm(false);
+      Setedit(false);
+      setNewIssue({
+        title: "",
+        description: "",
+        project: "",
+        assignedTo: "",
+        assignedToEmail: "",
+        status: "Open",
+      });
+      // Refresh issues after update
+      const reponse = await axios.get("http://localhost:3000/api/issues");
+      setIssues(reponse.data.message);
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setShowForm(false);
+      Setedit(false);
+      setNewIssue({
+        title: "",
+        description: "",
+        project: "",
+        assignedTo: "",
+        assignedToEmail: "",
+        status: "Open",
+      });
+    }
   };
 
   return (
@@ -192,12 +263,21 @@ const Reports = () => {
                     rows={4}
                   />
                 </div>
-                <button
-                  onClick={handleAddIssue}
-                  className="mt-4 bg-green-600 text-white px-5 py-2 rounded hover:bg-green-700 transition"
-                >
-                  Submit Issue
-                </button>
+                {!Editting ? (
+                  <button
+                    onClick={handleAddIssue}
+                    className="mt-4 bg-green-600 text-white px-5 py-2 rounded hover:bg-green-700 transition"
+                  >
+                    Submit Issue
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleUpdateIssue}
+                    className="mt-4 bg-green-600 text-white px-5 py-2 rounded hover:bg-green-700 transition"
+                  >
+                    Edit Issue
+                  </button>
+                )}
               </div>
             )}
 
@@ -249,19 +329,19 @@ const Reports = () => {
                           <>
                             <div className="flex space-x-2">
                               <button
-                                onClick={() => handleResolve(issue.id)}
+                                onClick={() => handleEditreport(issue._id)}
                                 className="bg-blue-500 text-white text-xs px-3 py-1 rounded hover:bg-blue-600 transition"
                               >
                                 Edit{" "}
                               </button>
                               <button
-                                onClick={() => handleResolve(issue.id)}
+                                onClick={() => handleResolve(issue._id)}
                                 className="bg-blue-500 text-white text-xs px-3 py-1 rounded hover:bg-gray-600 transition"
                               >
                                 Mark Resolved
                               </button>
                               <button
-                                onClick={() => handleResolve(issue.id)}
+                                onClick={() => handleResolve(issue._id)}
                                 className="bg-blue-500 text-white text-xs px-3 py-1 rounded hover:bg-orange-800 transition"
                               >
                                 Remove{" "}
@@ -285,5 +365,4 @@ const Reports = () => {
     </div>
   );
 };
-
 export default Reports;
