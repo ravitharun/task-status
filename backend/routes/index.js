@@ -154,12 +154,16 @@ router.get('/protected', (req, res) => {
   }
 })
 // getting user info
-router.get('/api/user', async (req, res) => {
+router.get('/api/user/', async (req, res) => {
   const { Email } = req.query;
+  console.log('Email', Email);
+
   if (!Email) {
     return res.status(400).json({ message: 'Email is required' });
   }
-  const User_info = await User.findOne({ email: Email });
+  const User_info = await User.find({ email: Email });
+  console.log("User_info", User_info);
+
   if (!User_info) {
     return res.status(404).json({ message: 'User not found' });
   }
@@ -227,6 +231,8 @@ router.post("/task/api/Data", async (req, res) => {
 router.get('/TaskAll/api', async (req, res) => {
   try {
     const tasks = await TaskModel.find({});
+    console.log(tasks,"tasks");
+    
     res.status(200).json({ message: tasks });
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch tasks", error: error.message });
@@ -368,7 +374,7 @@ router.get('/accept-invite', async (req, res) => {
     // Check if user is already part of a team
     const isAlreadyInTeam = await Team.findOne({ members: email });
     if (isAlreadyInTeam) {
-      io.emit("CheckUSerTeam", { message: `Your Team member Is already Exits ${name}` });
+      io.emit("CheckUSerTeam", { message: `${name} is already part of the team — invited by ${invitedBy}.` });
       return res.status(400).json({ message: "User is already part of a team" });
     }
 
@@ -381,7 +387,7 @@ router.get('/accept-invite', async (req, res) => {
 
     await Store_team.save();
 
-    io.emit("AcceptInvite", { message: `Your Team member accepted ${name}` });
+    io.emit("AcceptInvite", { message: `${name} is now part of the team! Invited by ${invitedBy}.` });
 
   } catch (error) {
     console.error("❌ Error saving team:", error);

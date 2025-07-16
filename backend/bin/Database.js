@@ -1,43 +1,24 @@
-// Import Mongoose
-const mongoose = require('mongoose');
-import dotenv from 'dotenv';
+const mongoose = require("mongoose");
+console.log("🔍 require is:", typeof require);
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-  .then(() => {
-    console.log('✅ Database connected successfully');
+// DB connection
+mongoose
+  .connect("mongodb://127.0.0.1:27017/TaskNet", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
   })
-  .catch((err) => {
-    console.error('❌ Database connection error:', err);
-  });
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
 
-// Define User Schema
+// User schema
 const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    lowercase: true,
-  },
-  Password: {
-    type: String,
-    required: true,
-  },
-  Profile: {
-    type: String,
-    default: '', // optional fallback
-  },
+  name: { type: String, required: true, trim: true },
+  email: { type: String, required: true, unique: true, lowercase: true },
+  Password: { type: String, required: true },
+  Profile: { type: String, default: '' },
 }, { timestamps: true });
 
-// Task Model
+// Task schema
 const Task = mongoose.Schema({
   TaskName: { type: String, required: true },
   TaskDescription: { type: String, required: true },
@@ -49,22 +30,17 @@ const Task = mongoose.Schema({
   Schedule: { type: String, required: true },
   EndSchedule: { type: String, required: true },
   Priority: { type: String, required: true },
+}, { timestamps: true });
 
-}, { timestamps: true })
-
-
+// Team schema
 const TeamSchema = new mongoose.Schema({
   Name: { type: String, default: "Jon Dev" },
-  members: { type: String }, // an array of emails
-  invitedBy: {
-    type: String,
-    default: "tr55@gmail.com"
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
+  members: { type: String },
+  invitedBy: { type: String, default: "tr55@gmail.com" },
+  createdAt: { type: Date, default: Date.now },
 });
+
+// Issues schema
 const issues = new mongoose.Schema({
   title: { type: String, required: true },
   project: { type: String, required: true },
@@ -72,15 +48,14 @@ const issues = new mongoose.Schema({
   status: { type: String, default: "Open" },
   description: { type: String, required: true },
   Add: { type: String },
-  Name: { type: String, required: true }, // Store the name of the user who created the issue
+  Name: { type: String, required: true },
 }, { timestamps: true });
 
-
-
-// Create and export the User model
+// Create models
 const User = mongoose.model('User', userSchema);
-const TaskModel = mongoose.model('Task', Task)
-const Team = mongoose.model('TeamSchema', TeamSchema)
+const TaskModel = mongoose.model('Task', Task);
+const Team = mongoose.model('Team', TeamSchema);
 const Issues = mongoose.model('Issues', issues);
 
+// ✅ CommonJS export
 module.exports = { User, TaskModel, Team, Issues };
