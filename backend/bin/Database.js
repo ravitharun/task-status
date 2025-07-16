@@ -1,8 +1,9 @@
 // Import Mongoose
 const mongoose = require('mongoose');
+import dotenv from 'dotenv';
 
 // Connect to MongoDB
-mongoose.connect('mongodb://127.0.0.1:27017/TaskNet', {
+mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
