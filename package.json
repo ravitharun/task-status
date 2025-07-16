@@ -1,4 +1,7 @@
 {
+  "engines": {
+    "node": "18.x"
+  },
   "devDependencies": {
     "vite": "^7.0.0"
   }
