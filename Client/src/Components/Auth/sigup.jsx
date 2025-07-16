@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { auth, googleProvider } from "../firebase";
+import { auth, googleProvider } from "./Firebase";
 import { signInWithPopup } from "firebase/auth";
 import { ToastContainer, toast } from "react-toastify";
 import axios from "axios";
