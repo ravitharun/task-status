@@ -14,6 +14,7 @@ import Projects from "./Components/Projects.jsx";
 import Notes from "./Components/Auth/Notes.jsx";
 import Reports from "./Components/Reports.jsx";
 import "./index.css";
+import Dashboard from "./Components/Dashboard.jsx";
 
 function App() {
   useEffect(() => {
@@ -73,6 +74,7 @@ function App() {
         <Route path="/task/Calendar" element={<Calendar />} />
         <Route path="/projects" element={<Projects />} />
         <Route path="/reports" element={<Reports />} />
+        <Route path="/Dashboard" element={<Dashboard />} />
         <Route path="/team" element={<Team />} />
         <Route path="/login" element={<Login />} />
         <Route path="/CreateAccount" element={<Signup />} />

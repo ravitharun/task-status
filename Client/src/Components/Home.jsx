@@ -216,9 +216,9 @@ function Home() {
       <Authentication></Authentication>
       {/* Layout with Sidebar */}
       <div className="flex flex-1 pt-16">
-        <div className="fixed top-16 left-0 h-[calc(100vh-4rem)] w-64">
-          <Sidebar />
-        </div>
+       <div className="hidden md:block fixed top-16 left-0 h-[calc(100vh-4rem)] w-64">
+  <Sidebar />
+</div>
 
         <div className="flex-1 ml-64 p- sticky top-16 overflow-y-auto">
           <QuickNavigation />

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import CryptoJS from "crypto-js";
+import { Link } from "react-router-dom";
 
 function HorizontalNavbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -107,12 +108,11 @@ function HorizontalNavbar() {
                 </div>
                 <ul className="py-2" aria-labelledby="user-menu-button">
                   <li>
-                    <a
-                      href="/"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
-                    >
-                      Dashboard
-                    </a>
+                    <Link to="/Dashboard">
+                      <a className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
+                        Dashboard
+                      </a>
+                    </Link>
                   </li>
                   <li>
                     <a
