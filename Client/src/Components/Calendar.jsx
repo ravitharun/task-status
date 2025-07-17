@@ -6,6 +6,7 @@ import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css"; // Required default styles
 import axios from "axios";
 import Authentication from "./Auth/Authentication";
+import QuickNavigation from "./QuickNavigation";
 
 const localizer = momentLocalizer(moment);
 
@@ -55,12 +56,9 @@ function CalendarPage() {
             📅 Calendar View
           </h2>
 
-          <a href="/">
-            <button className="px-6 py-2 bg-blue-600 mb-2 text-white rounded-md hover:bg-blue-300 hover:text-black transition mt-4 ml-3">
-              Task
-            </button>
-          </a>
-
+          <div className="">
+            <QuickNavigation />
+          </div>
           {loading ? (
             <p className="text-center text-gray-600">Loading tasks...</p>
           ) : error ? (

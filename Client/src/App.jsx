@@ -80,7 +80,7 @@ function App() {
         <Route path="/CreateAccount" element={<Signup />} />
         <Route path="/accept-invite" element={<Acceptinvite />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/notes" element={<Notes />} />
+        <Route path="/task/Notes" element={<Notes />} />
       </Routes>
     </>
   );
