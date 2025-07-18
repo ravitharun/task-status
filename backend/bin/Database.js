@@ -35,7 +35,9 @@ const Task = mongoose.Schema({
 // Team schema
 const TeamSchema = new mongoose.Schema({
   Name: { type: String, default: "Jon Dev" },
+  socketId: { type: String },
   members: { type: String },
+  status: { type: String, default: 'offline' },
   invitedBy: { type: String, default: "tr55@gmail.com" },
   createdAt: { type: Date, default: Date.now },
 });

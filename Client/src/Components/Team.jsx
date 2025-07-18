@@ -8,19 +8,27 @@ import { useState } from "react";
 import { socket } from "./socket";
 import Authentication from "./Auth/Authentication";
 import { toast } from "react-toastify";
-// import { socket } from "./socket";
+import { userEmail } from "./Email";
+
 function Team() {
   const [Teammember, setTeam] = useState([]);
 
   useEffect(() => {
     const teamMembers = async () => {
-      const reponse = await axios.get("http://localhost:3000/api/Task/Member");
-      setTeam(reponse.data.data);
-      // console.log(reponse.data.data, "api call");
+      try {
+        const response = await axios.get(
+          `http://localhost:3000/api/Task/Member?userEmail=${userEmail}`
+        );
+        setTeam(response.data.message);
+        console.log (response.data.message);
+      } catch (err) {
+        console.log(err, "error");
+      }
     };
     teamMembers();
   }, []);
 
+  console.log(userEmail);
   // to check the totalteam
   useEffect(() => {
     const handleTotalTeam = (TeamMemebr) => {
@@ -28,6 +36,7 @@ function Team() {
     };
 
     socket.on("TotalTeam", handleTotalTeam);
+
     socket.on("RemoveTeamMember", (data) => {
       toast.info("Team member removed:", data.message);
     });
@@ -39,7 +48,6 @@ function Team() {
   // Function to remove team member
   const ReomeveTeamMember = async (id) => {
     try {
-
       const response = await axios.delete(
         `http://localhost:3000/api/Task/Member/${id}`
       );
@@ -171,12 +179,12 @@ function Team() {
                     <td className="px-6 py-4">
                       <span
                         className={`px-3 py-1 text-sm font-medium rounded-full ${
-                          Status === "Active"
+                          member.status === "online"
                             ? "bg-green-100 text-green-700"
                             : "bg-red-100 text-red-700"
                         }`}
                       >
-                        {Status}
+                        {member.status}
                       </span>
                     </td>
 

@@ -13,7 +13,7 @@ function Invite() {
   useEffect(() => {
     const reponseemail = () => {
       socket.on("AcceptInvite", (dataMessage) => {
-        toast.s(dataMessage.message);
+        toast.success(dataMessage.message);
       });
       socket.on("CheckUSerTeam", (dataMessage) => {
         toast.info(dataMessage.message);

@@ -19,6 +19,65 @@ const io = new Server(server, {
 });
 
 require('dotenv').config();
+
+
+
+io.on("connection", (socket) => {
+  console.log("✅ User connected:", socket.id);
+
+  socket.on("userOnline", async (email) => {
+    await Team.findOneAndUpdate(
+      { email },
+      { status: "online", socketId: socket.id }
+    );
+    io.emit("userStatusChange", { email, status: "online" });
+  });
+
+  socket.on("disconnect", async () => {
+    console.log("❌ User disconnected:", socket.id);
+    const user = await Team.findOne({ socketId: socket.id });
+    if (user) {
+      await Team.findOneAndUpdate(
+        { socketId: socket.id },
+        { status: "offline" }
+      );
+      io.emit("userStatusChange", { email: user.email, status: "offline" });
+    }
+  });
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Configure Nodemailer
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -106,6 +165,8 @@ router.post('/api/signup', async function (req, res) {
   }
 });
 
+
+
 // authentication the user
 router.post('/api/Login', async (req, res) => {
 
@@ -162,7 +223,6 @@ router.get('/api/user/', async (req, res) => {
     return res.status(400).json({ message: 'Email is required' });
   }
   const User_info = await User.find({ email: Email });
-  console.log("User_info", User_info);
 
   if (!User_info) {
     return res.status(404).json({ message: 'User not found' });
@@ -170,18 +230,9 @@ router.get('/api/user/', async (req, res) => {
   return res.json({ message: User_info, status: 'success' });
 })
 
-// Form route to handle form submission
-// router.post('/api/Formdata/submit', logger, async (req, res) => {
-//   const { } = req.body
-//   try {
-//     // Handle form submission logic here
-//     // For example, save the form data to the database
-//     res.status(200).json({ message: 'Form submitted successfully' });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: 'Server error', error: error.message });
-//   }
-// })
+
+
+
 
 
 
@@ -231,8 +282,8 @@ router.post("/task/api/Data", async (req, res) => {
 router.get('/TaskAll/api', async (req, res) => {
   try {
     const tasks = await TaskModel.find({});
-    console.log(tasks,"tasks");
-    
+    console.log(tasks, "tasks");
+
     res.status(200).json({ message: tasks });
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch tasks", error: error.message });
@@ -333,13 +384,7 @@ router.post("/api/taskadd/email", async (req, res) => {
   
 <a href="https://beamish-biscotti-b8559d.netlify.app/accept-invite?email=${FindUser.email}">
   Accept Invitation
-</a>
-
-
-
- 
-
-        </p>
+</a>        </p>
         <p>Here's a fun gif for you:</p>
         <amp-anim src="https://cldup.com/D72zpdwI-i.gif" width="500" height="350"></amp-anim>
       </body>
@@ -378,10 +423,14 @@ router.get('/accept-invite', async (req, res) => {
       return res.status(400).json({ message: "User is already part of a team" });
     }
 
+
+
+
     // Store the user in the Team collection
     const Store_team = new Team({
       Name: name,
       members: email,
+      status: "online",
       invitedBy: invitedBy
     });
 
@@ -395,17 +444,36 @@ router.get('/accept-invite', async (req, res) => {
   }
 });
 
-// 
+
+
+
+
+// get all team member
 router.get("/api/Task/Member", async (req, res) => {
   try {
-    // console.log('logger', logger)
+    const { userEmail } = req.query;
     const data = await Team.find({});
-    io.emit('TotalTeam', { TotalTeam: data });
-    res.json({ message: "Emitted TotalTeam", data });
+
+    // Emit to all clients that a user is now online
+    
+
+    // Emit updated team data
+    io.emit("TotalTeam", { TotalTeam: data });
+
+    res.json({ message: data });
   } catch (error) {
-    res.json({ message: error });
+    res.json({ message: error.message });
   }
 });
+
+
+
+
+
+
+
+
+
 
 // remove team member
 router.delete('/api/Task/Member/:id', async (req, res) => {
