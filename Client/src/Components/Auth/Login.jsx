@@ -1,6 +1,6 @@
 import { useState } from "react";
 // import { useNavigate } from "react-router-dom";
-import { auth, googleProvider } from './Firebase';
+import { auth, googleProvider } from "./Firebase";
 import { signInWithPopup } from "firebase/auth";
 import { ToastContainer, toast } from "react-toastify";
 import axios from "axios";
@@ -12,6 +12,7 @@ function Login() {
   const [UserName, SetUserName] = useState("");
   const [Email, SetEmail] = useState("");
   const [Password, SetPassword] = useState("");
+  const [Role, SetRole] = useState("");
   const secretKey = "mySecretKey123";
 
   const signInWithGoogle = async () => {
@@ -75,7 +76,6 @@ function Login() {
       } else if (response.data.message == "Invalid credentials") {
         toast.error("Invalid credentials");
       } else {
-       
         const encryptedEmail = CryptoJS.AES.encrypt(
           Email,
           secretKey
@@ -101,6 +101,10 @@ function Login() {
     } else {
       passwordField.type = "password";
     }
+  };
+
+  const Getrole = (role) => {
+    console.log("role", role);
   };
   return (
     <>
@@ -171,20 +175,37 @@ function Login() {
               value={Password}
               className="mt-1 w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
             />
-            <div class="form-check">
-              <input
-                class="form-check-input"
-                type="checkbox"
-                value=""
-                id=""
-                onClick={Showpassword}
-              />
-              <label class="form-check-label" for="">
+
+            <div class="form-check mt-3" onClick={Showpassword}>
+              <input class="form-check-input " type="checkbox" value="" id="" />
+              <label class="form-check-label text-white " for="">
                 {" "}
                 Show password{" "}
               </label>
             </div>
           </div>
+          <div className="text-white font-mono flex items-center space-x-6">
+            <label className="flex items-center space-x-2">
+              <input
+                type="radio"
+                name="role"
+                value="admin"
+                onClick={(e) => Getrole(e.target.value)}
+              />
+              <span>Admin</span>
+            </label>
+
+            <label className="flex items-center space-x-2">
+              <input
+                type="radio"
+                name="role"
+                value="team-member"
+                onClick={(e) => Getrole(e.target.value)}
+              />
+              <span>Team Member</span>
+            </label>
+          </div>
+
           <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
             <a href="/CreateAccount" class="text-white hover:underline">
               Don't have an account?{" "}
