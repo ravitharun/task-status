@@ -7,7 +7,7 @@ function HorizontalNavbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [UserInfo, Setuserinfo] = useState({});
   const [Login, setlogin] = useState(false);
-  const secretKey = "mySecretKey123"; // keep this secret
+  const secretKey = "mySecretKey123"; // Keep this safe
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -17,13 +17,11 @@ function HorizontalNavbar() {
     const GetUserinfo = async () => {
       try {
         const storedEmail = localStorage.getItem("useremail");
-
         if (!storedEmail) {
           console.warn("No useremail found in localStorage");
           return;
         }
 
-        // Decrypt the email
         const decryptedEmail = CryptoJS.AES.decrypt(
           storedEmail,
           secretKey
@@ -34,13 +32,12 @@ function HorizontalNavbar() {
           return;
         }
 
-        // Fetch user info
         const Getresponse = await axios.get(`http://localhost:3000/api/user/`, {
           params: { Email: decryptedEmail },
         });
 
-        // Assuming response looks like { message: { name, email, Profile } }
-        Setuserinfo(Getresponse.data.message);
+        const user = Getresponse.data.message[0]; // ✅ Extract first object
+        Setuserinfo(user);
       } catch (error) {
         console.error("Error fetching user info:", error);
       }
@@ -49,26 +46,25 @@ function HorizontalNavbar() {
     GetUserinfo();
   }, []);
 
-  // SignOut
   const SignOut = () => {
     try {
-      // 🔐 Remove token from localStorage
       localStorage.removeItem("Token");
       setlogin(false);
-      // 🚪 Redirect to login page
       window.location.href = "/login";
     } catch (error) {
       console.error("Logout error:", error);
     }
   };
+
   localStorage.setItem("Login", Login);
+
   return (
     <nav className="bg-white border-gray-200 dark:bg-gray-900 dark:border-gray-700 shadow-md">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
         {/* Logo */}
         <a href="#" className="flex items-center space-x-3 rtl:space-x-reverse">
-          <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white  hover:text-fuchsia-600">
-            TaskNet{" "}
+          <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white hover:text-fuchsia-600">
+            TaskNet
           </span>
         </a>
 
@@ -85,10 +81,12 @@ function HorizontalNavbar() {
               <span className="sr-only">Open user menu</span>
               <img
                 className="w-8 h-8 rounded-full object-cover"
+                title={` Hi ${UserInfo.name}`}
                 src={
-                  UserInfo?.Profile || "https://ui-avatars.com/api/?name=User"
+                  UserInfo.Profile || "https://ui-avatars.com/api/?name=User"
                 }
                 alt="user"
+                referrerPolicy="no-referrer"
               />
             </button>
 
@@ -100,18 +98,19 @@ function HorizontalNavbar() {
               >
                 <div className="px-4 py-3">
                   <span className="block text-sm text-gray-900 dark:text-white">
-                    {UserInfo?.name || "Name"}
+                    {UserInfo.name || "Name not available"}
                   </span>
                   <span className="block text-sm text-gray-500 truncate dark:text-gray-400">
-                    {UserInfo?.email || "Email not available"}
+                    {UserInfo.email || "Email not available"}
                   </span>
                 </div>
                 <ul className="py-2" aria-labelledby="user-menu-button">
                   <li>
-                    <Link to="/Dashboard">
-                      <a className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
-                        Dashboard
-                      </a>
+                    <Link
+                      to="/Dashboard"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                    >
+                      Dashboard
                     </Link>
                   </li>
                   <li>

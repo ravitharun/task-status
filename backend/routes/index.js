@@ -9,7 +9,6 @@ const jwt = require("jsonwebtoken");
 const app = require("../app"); // Basic Express app
 const server = http.createServer(app);
 const { Server } = require("socket.io");
-const { log } = require('console');
 const SECRET_KEY = process.env.SECRET_KEY;
 const io = new Server(server, {
   cors: {
@@ -19,15 +18,14 @@ const io = new Server(server, {
 });
 
 require('dotenv').config();
-
-
-
 io.on("connection", (socket) => {
   console.log("✅ User connected:", socket.id);
 
   socket.on("userOnline", async (email) => {
+    console.log('email from emit.',email);
+    
     await Team.findOneAndUpdate(
-      { email },
+      { members:email },
       { status: "online", socketId: socket.id }
     );
     io.emit("userStatusChange", { email, status: "online" });

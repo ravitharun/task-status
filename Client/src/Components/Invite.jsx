@@ -23,6 +23,7 @@ function Invite() {
   }, []);
 
   const Sendinvite = async (e) => {
+
     // calling api here
     const Invited_Email = localStorage.getItem("useremail");
 
@@ -32,7 +33,6 @@ function Invite() {
     // Convert bytes to original string
     const decryptedEmail = bytes.toString(CryptoJS.enc.Utf8);
 
-    console.log("encryptedEmail", decryptedEmail);
     e.preventDefault();
     if (!Email) {
       alert("Please enter an email address.");
@@ -86,6 +86,11 @@ function Invite() {
                   value={Email}
                   placeholder="Enter email address"
                   onChange={(e) => Setemail(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      Sendinvite(); // Don't pass e.key unless needed
+                    }
+                  }}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 shadow-sm"
                 />
 

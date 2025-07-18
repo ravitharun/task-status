@@ -20,7 +20,6 @@ function Team() {
           `http://localhost:3000/api/Task/Member?userEmail=${userEmail}`
         );
         setTeam(response.data.message);
-        console.log (response.data.message);
       } catch (err) {
         console.log(err, "error");
       }
@@ -28,7 +27,6 @@ function Team() {
     teamMembers();
   }, []);
 
-  console.log(userEmail);
   // to check the totalteam
   useEffect(() => {
     const handleTotalTeam = (TeamMemebr) => {
@@ -51,7 +49,6 @@ function Team() {
       const response = await axios.delete(
         `http://localhost:3000/api/Task/Member/${id}`
       );
-      console.log(response.data.message, "response from backend");
       if (response.status === 200) {
         // Successfully removed team member
         setTeam((prevMembers) =>
@@ -90,7 +87,8 @@ function Team() {
 
           {/* Invite */}
           <Invite />
-
+<br />
+<br />
           {/* Team Count Card */}
           <div className="w-full sm:max-w-md mb-6">
             <div className="flex items-center bg-white shadow rounded-lg p-4 border border-gray-200">
