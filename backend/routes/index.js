@@ -22,10 +22,10 @@ io.on("connection", (socket) => {
   console.log("✅ User connected:", socket.id);
 
   socket.on("userOnline", async (email) => {
-    console.log('email from emit.',email);
-    
+    console.log('email from emit.', email);
+
     await Team.findOneAndUpdate(
-      { members:email },
+      { members: email },
       { status: "online", socketId: socket.id }
     );
     io.emit("userStatusChange", { email, status: "online" });
@@ -109,7 +109,9 @@ router.post('/api/signup', async function (req, res) {
   try {
     // getting user data from request body
     const { data } = req.body;
-    if (!data || !data.UserName || !data.Email || !data.Password) {
+    console.log(data, 'data');
+
+    if (!data.UserName || !data.Email || !data.Password || !data.Role) {
       return res.status(400).json({ message: 'Please fill all the fields' });
     }
     if (data.Password.length < 6) {
@@ -124,6 +126,7 @@ router.post('/api/signup', async function (req, res) {
       name: data.UserName,
       email: data.Email,
       Password: hash,
+      Role: data.Role || 'Team Member',
       Profile: data.ProfileUrl || '', // Optional fallback for ProfileUrl
     });
 
@@ -170,15 +173,23 @@ router.post('/api/Login', async (req, res) => {
 
   try {
     const { data } = req.body;
-    console.log(data)
-    if (!data || !data.Email || !data.Password) {
+    console.log(data, 'api/login')
+    if (!data || !data.Email || !data.Password || !data.Role) {
+      console.log('oh');
+
       return res.status(400).json({ message: 'Please fill all the fields' });
     }
 
     const user = await User.findOne({ email: data.Email });
+    if (user.Role != data.Role) {
+      // console.log({ message: 'Your Role IS incorrect' });
+
+      return res.json({ message: 'Your Role IS incorrect' });
+
+    }
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status.json({ message: 'User not found' });
     }
 
     const isMatch = await bcrypt.compare(data.Password, user.Password);
@@ -453,7 +464,7 @@ router.get("/api/Task/Member", async (req, res) => {
     const data = await Team.find({});
 
     // Emit to all clients that a user is now online
-    
+
 
     // Emit updated team data
     io.emit("TotalTeam", { TotalTeam: data });

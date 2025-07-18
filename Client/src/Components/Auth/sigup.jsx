@@ -5,6 +5,7 @@ import { signInWithPopup } from "firebase/auth";
 import { ToastContainer, toast } from "react-toastify";
 import axios from "axios";
 function Signup() {
+  const [Role, SetRole] = useState("");
   const [UserName, SetUserName] = useState("");
   const [Email, SetEmail] = useState("");
   const [Password, SetPassword] = useState("");
@@ -28,15 +29,6 @@ function Signup() {
       console.error("Error signing in with Google:", error);
     }
   };
-
-  // const signOut = async () => {
-  //   try {
-  //     await auth.signOut();
-  //   } catch (error) {
-  //     console.error("Error signing out:", error);
-  //   }
-  // };
-
   const Verify = async (event) => {
     event.preventDefault();
     const data = {
@@ -44,7 +36,9 @@ function Signup() {
       Email: Email,
       Password: Password,
       ProfileUrl: ProfileUrl,
+      Role: Role,
     };
+    console.log(data);
     if (Password.length < 6) {
       toast.error("Password must be at least 6 characters long", {
         position: "bottom-left",
@@ -112,6 +106,10 @@ function Signup() {
       passwordField.type = "password";
     }
   };
+  const Getrole = (role) => {
+    SetRole(role);
+  };
+
   return (
     <>
       <ToastContainer />
@@ -196,6 +194,27 @@ function Signup() {
                 Show password{" "}
               </label>
             </div>
+          </div>
+          <div className="text-white font-mono flex items-center space-x-6">
+            <label className="flex items-center space-x-2">
+              <input
+                type="radio"
+                name="role"
+                value="admin"
+                onClick={(e) => Getrole(e.target.value)}
+              />
+              <span>Admin</span>
+            </label>
+
+            <label className="flex items-center space-x-2">
+              <input
+                type="radio"
+                name="role"
+                value="team-member"
+                onClick={(e) => Getrole(e.target.value)}
+              />
+              <span>Team Member</span>
+            </label>
           </div>
           <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
             <a href="/login" class="text-white hover:underline">

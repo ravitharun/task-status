@@ -81,7 +81,7 @@ function HorizontalNavbar() {
               <span className="sr-only">Open user menu</span>
               <img
                 className="w-8 h-8 rounded-full object-cover"
-                title={` Hi ${UserInfo.name}`}
+                // title={` Hi ${UserInfo.name || 'name'}`}
                 src={
                   UserInfo.Profile || "https://ui-avatars.com/api/?name=User"
                 }

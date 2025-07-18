@@ -37,8 +37,8 @@ function Login() {
       UserName: UserName,
       Email: Email,
       Password: Password,
+      Role: Role,
     };
-
     // checking password length
     if (Password.length < 6) {
       toast.error("Password must be at least 6 characters long", {
@@ -71,20 +71,28 @@ function Login() {
       const response = await axios.post("http://localhost:3000/api/Login", {
         data,
       });
+      console.log(response.data.message, "rs");
+
       if (response.data.message == "User not found") {
         toast.error("User not found");
       } else if (response.data.message == "Invalid credentials") {
         toast.error("Invalid credentials");
+      } else if (response.data.message == "Your Role IS incorrect") {
+        toast.error("Invalid Role");
       } else {
         const encryptedEmail = CryptoJS.AES.encrypt(
           Email,
           secretKey
         ).toString();
-        alert(response.data.message);
+
         localStorage.setItem("useremail", encryptedEmail);
         localStorage.setItem("Token", response.data.message);
         toast.success("Login successful");
-        window.location.href = "/"; // Redirect to home page after successful login
+
+        
+        setTimeout(() => {
+          window.location.href = "/"; // Redirect to home page after successful login
+        }, 3000);
       }
     }
     localStorage.setItem("Login", Login);
@@ -104,7 +112,7 @@ function Login() {
   };
 
   const Getrole = (role) => {
-    console.log("role", role);
+    SetRole(role);
   };
   return (
     <>

@@ -14,6 +14,7 @@ mongoose
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   email: { type: String, required: true, unique: true, lowercase: true },
+  Role:{type:String,default:"Team Member"},
   Password: { type: String, required: true },
   Profile: { type: String, default: '' },
 }, { timestamps: true });
