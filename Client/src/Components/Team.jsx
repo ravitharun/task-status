@@ -12,7 +12,6 @@ import { userEmail } from "./Email";
 
 function Team() {
   const [Teammember, setTeam] = useState([]);
-  const [TeammemberStatus, setTeamStatus] = useState([]);
 
   useEffect(() => {
     const teamMembers = async () => {
@@ -21,6 +20,7 @@ function Team() {
           `http://localhost:3000/api/Task/Member?userEmail=${userEmail}`
         );
         setTeam(response.data.message);
+        // console.log(response.data.message);
       } catch (err) {
         console.log(err, "error");
       }
@@ -42,15 +42,6 @@ function Team() {
     return () => {
       socket.off("TotalTeam", handleTotalTeam); // Cleanup
     };
-  }, []);
-
-  useEffect(() => {
-    const status = () => {
-      const status_tm = Teammember.filter((check) => check.status == "offline");
-
-      setTeamStatus(status_tm.length);
-    };
-    status()
   }, []);
 
   // Function to remove team member
@@ -75,6 +66,7 @@ function Team() {
 
   const Status = "offline";
   const Page = "Team";
+
   return (
     <div className="flex flex-col h-screen bg-amber-50">
       {/* Top Navbar */}
@@ -100,40 +92,65 @@ function Team() {
           <br />
           <br />
           {/* Team Count Card */}
-      <div className="w-full sm:max-w-3xl mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-  {/* Card 1 - Total Members */}
-  <div className="bg-white rounded-2xl shadow-md p-5 border border-gray-200 transition hover:shadow-lg">
-    <div className="flex items-center mb-3">
-      <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl font-bold mr-4">
-        👥
-      </div>
-      <div>
-        <p className="text-sm text-gray-500">Total Team Members</p>
-        <p className="text-2xl font-bold text-gray-800">{Teammember.length}</p>
-      </div>
-    </div>
-    <div className="text-right text-xs text-gray-400 mt-2">
-      Last Updated: {new Date().toLocaleString()}
-    </div>
-  </div>
+          <div className="w-full sm:max-w-3xl mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Card 1 - Total Members */}
+            <div className="bg-white rounded-2xl shadow-md p-5 border border-gray-200 transition hover:shadow-lg">
+              <div className="flex items-center mb-3">
+                <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl font-bold mr-4">
+                  👥
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Total Team Members</p>
+                  <p className="text-2xl font-bold text-gray-800">
+                    {Teammember.length}
+                  </p>
+                </div>
+              </div>
+              <div className="text-right text-xs text-gray-400 mt-2">
+                Last Updated: {new Date().toLocaleString()}
+              </div>
+            </div>
 
-  {/* Card 2 - Offline Members */}
-  <div className="bg-white rounded-2xl shadow-md p-5 border border-gray-200 transition hover:shadow-lg">
-    <div className="flex items-center mb-3">
-      <div className="w-14 h-14 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-2xl font-bold mr-4">
-        📴
-      </div>
-      <div>
-        <p className="text-sm text-gray-500">Offline Members</p>
-        <p className="text-2xl font-bold text-gray-800">{TeammemberStatus}</p>
-      </div>
-    </div>
-    <div className="text-right text-xs text-gray-400 mt-2">
-      Updated: {new Date().toLocaleString()}
-    </div>
-  </div>
-</div>
-
+            {/* Card 2 - Offline Members */}
+            <div className="bg-white rounded-2xl shadow-md p-5 border border-gray-200 transition hover:shadow-lg">
+              <div className="flex items-center mb-3">
+                <div className="w-14 h-14 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-2xl font-bold mr-4">
+                  📴
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Offline Members</p>
+                  <p className="text-2xl font-bold text-gray-800">
+                    {
+                      Teammember.filter((check) => check.status == "offline")
+                        .length
+                    }
+                  </p>
+                </div>
+              </div>
+              <div className="text-right text-xs text-gray-400 mt-2">
+                Updated: {new Date().toLocaleString()}
+              </div>
+            </div>
+            <div className="bg-white rounded-2xl shadow-md p-5 border border-gray-200 transition hover:shadow-lg">
+              <div className="flex items-center mb-3">
+                <div className="w-14 h-14 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-2xl font-bold mr-4">
+                  📴
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Online Members</p>
+                  <p className="text-2xl font-bold text-gray-800">
+                    {
+                      Teammember.filter((check) => check.status == "online")
+                        .length
+                    }
+                  </p>
+                </div>
+              </div>
+              <div className="text-right text-xs text-gray-400 mt-2">
+                Updated: {new Date().toLocaleString()}
+              </div>
+            </div>
+          </div>
 
           {/* Team Table */}
           <div className="overflow-x-auto bg-white rounded-xl shadow border border-gray-200">

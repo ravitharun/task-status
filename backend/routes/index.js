@@ -18,31 +18,31 @@ const io = new Server(server, {
 });
 
 require('dotenv').config();
-io.on("connection", (socket) => {
-  console.log("✅ User connected:", socket.id);
+// io.on("connection", (socket) => {
+//   console.log("✅ User connected:", socket.id);
 
-  socket.on("userOnline", async (email) => {
-    console.log('email from emit.', email);
+//   socket.on("userOnline", async (email) => {
+//     console.log('email from emit.', email);
 
-    await Team.findOneAndUpdate(
-      { members: email },
-      { status: "online", socketId: socket.id }
-    );
-    io.emit("userStatusChange", { email, status: "online" });
-  });
+//     await Team.findOneAndUpdate(
+//       { members: email },
+//       { status: "online", socketId: socket.id }
+//     );
+//     io.emit("userStatusChange", { email, status: "online" });
+//   });
 
-  socket.on("disconnect", async () => {
-    console.log("❌ User disconnected:", socket.id);
-    const user = await Team.findOne({ socketId: socket.id });
-    if (user) {
-      await Team.findOneAndUpdate(
-        { socketId: socket.id },
-        { status: "offline" }
-      );
-      io.emit("userStatusChange", { email: user.email, status: "offline" });
-    }
-  });
-});
+//   socket.on("disconnect", async () => {
+//     console.log("❌ User disconnected:", socket.id);
+//     const user = await Team.findOne({ socketId: socket.id });
+//     if (user) {
+//       await Team.findOneAndUpdate(
+//         { socketId: socket.id },
+//         { status: "offline" }
+//       );
+//       io.emit("userStatusChange", { email: user.email, status: "offline" });
+//     }
+//   });
+// });
 
 
 
