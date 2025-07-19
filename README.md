@@ -27,6 +27,15 @@ A powerful MERN stack-based project management platform that helps users efficie
 ---
 
 ## 📂 Folder Structure
+<p>
+  <strong>📁 Project Folder Structure</strong><br/>
+  <img width="115" height="677" alt="Project Folder Structure" src="https://github.com/user-attachments/assets/4cf13fd3-251d-48f6-a6b6-86d18af244a4" />
+</p>
+
+<p>
+  The image above shows the folder structure of my project. It provides a clear overview of how different components, pages, and assets are organized for maintainability and scalability.
+</p>
+
 
 
 ---
