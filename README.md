@@ -106,15 +106,15 @@ A robust and collaborative **MERN Stack**-based project management platform that
 
 ```bash
 # Clone the repo
-git clone https://github.com/your-username/project-management-app.git
-cd project-management-app
+git clone https://github.com/ravitharun/task-status.git
+cd TASKNEST
 
 # Install frontend dependencies
-cd client
-npm install
-npm start
-
-# Install backend dependencies
-cd ../server
+cd Client
 npm install
 npm run dev
+
+# Install backend dependencies
+cd ../backend
+npm install
+npx nodemon
