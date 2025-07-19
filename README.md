@@ -90,8 +90,8 @@ A robust and collaborative **MERN Stack**-based project management platform that
 ---
 
 ## 🔮 Upcoming Features
-
 - 🕒 **Live Time Display** – Real-time clock to improve time-based tracking.
+- **Dashboard For projectManager**-Realtime Dashboard where Manager can view the complete Tasks/Projects.
 - 📤 **Export Reports/CSV** – Export project and task reports.
 - 📱 **Mobile-Friendly UI** – Fully responsive design for smaller screens.
 - 🔍 **Search & Sorting Features** – Filter tasks/projects with search and sort controls.
