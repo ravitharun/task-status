@@ -71,7 +71,7 @@ function Projects() {
 
           {/* Header */}
           <h1 className="text-2xl font-bold text-gray-800 mb-4 text-center">
-            📁 Projects Overview
+            📁 Task Overview
           </h1>
 
           {/* Projects Grid */}

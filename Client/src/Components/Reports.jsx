@@ -3,7 +3,7 @@ import HorizontalNavbar from "./Horizontalnavbar";
 import Sidebar from "./Sidebar";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
-import { socket } from "./socket";
+// import { socket } from "./socket";
 import { userEmail } from "./Email";
 
 const Reports = () => {
@@ -19,23 +19,23 @@ const Reports = () => {
     getIssue();
   }, []);
   // websocket connection to fetch existing issues
-  useEffect(() => {
-    socket.on("issueAdded", (data) => {
-      toast.success(data.message);
-    });
-    socket.on("issueUpdated", (data) => {
-      toast.info(data.message);
-    });
-    const handelRemovedissue = (data) => {
-      toast.info(data.message);
-    };
+  // useEffect(() => {
+  //   socket.on("issueAdded", (data) => {
+  //     toast.success(data.message);
+  //   });
+  //   socket.on("issueUpdated", (data) => {
+  //     toast.info(data.message);
+  //   });
+  //   // const handelRemovedissue = (data) => {
+  //   //   toast.info(data.message);
+  //   // };
 
-    socket.on("issueDeleted", handelRemovedissue);
-    return () => {
-      socket.off("issueAdded");
-      socket.off("issueUpdated");
-    };
-  }, []);
+  //   // socket.on("issueDeleted", handelRemovedissue);
+  //   return () => {
+  //     socket.off("issueAdded");
+  //     socket.off("issueUpdated");
+  //   };
+  // }, []);
 
   const [newIssue, setNewIssue] = useState({
     title: "",
