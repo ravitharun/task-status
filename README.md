@@ -65,7 +65,6 @@ UI views such as dashboard, project creation, progress bar, and budget filtering
 ---
 
 ## 🔮 Upcoming Features
-- 🧑‍💼 **Role-Based Access (Upcoming)** – Customize view and access per user role.
 - 🕒 **Live Time Display (Upcoming)** – Real-time clock for accurate planning and logging.
 - 📤 **Resume/Export Project Reports** – Downloadable project summaries or CSV.
 - 📱 **Full Mobile Responsiveness** – Enhanced mobile layout and performance.
