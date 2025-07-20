@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 const bcrypt = require('bcrypt');
-var { User, TaskModel, Team, Issues } = require('../bin/Database');
+var { User, TaskModel, Team, Issues, RecentActivityLog } = require('../bin/Database');
 const nodemailer = require("nodemailer");
 const http = require("http");
 const jwt = require("jsonwebtoken");
@@ -532,6 +532,14 @@ router.post('/api/issues', async (req, res) => {
   });
 
 
+  const Recent = new RecentActivityLog({
+    message: newIssue.title,
+    user: userfind.name,
+    type: 'issue'
+  })
+  await Recent.save(); // ✅ This saves the recent activity to DB
+
+  res.status(201).json({ message: "Issue created and activity logged successfully" });
 })
 
 
@@ -615,4 +623,19 @@ router.delete('/api/report/delete/:id', async (req, res) => {
 server.listen(3001, () => {
   console.log("🚀 Server running on http://localhost:3001");
 });
+
+
+
+// recent actvity
+router.get('/recent-activity',async(req,res)=>{
+
+  try {
+    const data=await RecentActivityLog.find({})
+    res.json({message:data})
+    
+  } catch (error) {
+   return res.json({message:error.message})
+  }
+})
+
 module.exports = router;

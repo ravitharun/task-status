@@ -12,6 +12,7 @@ import CryptoJS from "crypto-js";
 import { socket } from "./socket";
 import QuickNavigation from "./QuickNavigation";
 import Authentication from "./Auth/Authentication";
+import Loader from "./Loader";
 function Home() {
   const popupRef = useRef(); // to control popup
   const [TaskName, SettaskName] = useState("");
@@ -27,6 +28,7 @@ function Home() {
   const [Task, SetTask] = useState([]); // ✅ this avoids undefined.map
 
   const [TaskEdit, SetTaskEdit] = useState([]);
+  const [LoadPage, SetLoader] = useState(false);
 
   // getting the all Task data from backend
 
@@ -68,11 +70,14 @@ function Home() {
   useEffect(() => {
     const GETTASK = async () => {
       try {
+        SetLoader(true);
         const task_data = await axios.get("http://localhost:3000/TaskAll/api");
         SetTask(task_data.data.message); // ✅ correct
       } catch (error) {
         console.error("❌ Error fetching tasks", error);
         toast.error("Failed to fetch tasks");
+      } finally {
+        SetLoader(false);
       }
     };
 
@@ -216,9 +221,9 @@ function Home() {
       <Authentication></Authentication>
       {/* Layout with Sidebar */}
       <div className="flex flex-1 pt-16">
-       <div className="hidden md:block fixed top-16 left-0 h-[calc(100vh-4rem)] w-64">
-  <Sidebar />
-</div>
+        <div className="hidden md:block fixed top-16 left-0 h-[calc(100vh-4rem)] w-64">
+          <Sidebar />
+        </div>
 
         <div className="flex-1 ml-64 p- sticky top-16 overflow-y-auto">
           <QuickNavigation />
@@ -505,51 +510,55 @@ function Home() {
                 </thead>
 
                 {/* Table Body */}
-                <tbody className="text-gray-800 divide-y divide-gray-200">
-                  {Task.map((data, id) => (
-                    <tr key={id} className="hover:bg-gray-50 transition">
-                      <td className="px-4 py-3">{data.TaskName}</td>
-                      <td className="px-4 py-3">{data.TaskDescription}</td>
-                      <td className="px-4 py-3">{data.EstimatedTime}</td>
+                {LoadPage ? (
+                  <Loader />
+                ) : (
+                  <tbody className="text-gray-800 divide-y divide-gray-200">
+                    {Task.map((data, id) => (
+                      <tr key={id} className="hover:bg-gray-50 transition">
+                        <td className="px-4 py-3">{data.TaskName}</td>
+                        <td className="px-4 py-3">{data.TaskDescription}</td>
+                        <td className="px-4 py-3">{data.EstimatedTime}</td>
 
-                      {/* Status with color */}
-                      <td className="px-4 py-3">
-                        <span
-                          className={`inline-block px-3 py-1 text-xs font-semibold rounded-full text-white ${
-                            data.Status === "Completed"
-                              ? "bg-green-500"
-                              : "bg-gray-400"
-                          }`}
-                        >
-                          {data.Status}
-                        </span>
-                      </td>
+                        {/* Status with color */}
+                        <td className="px-4 py-3">
+                          <span
+                            className={`inline-block px-3 py-1 text-xs font-semibold rounded-full text-white ${
+                              data.Status === "Completed"
+                                ? "bg-green-500"
+                                : "bg-gray-400"
+                            }`}
+                          >
+                            {data.Status}
+                          </span>
+                        </td>
 
-                      <td className="px-4 py-3">{data.Type}</td>
-                      <td className="px-4 py-3">{data.Assignee}</td>
-                      <td className="px-4 py-3">{data.Schedule}</td>
-                      <td className="px-4 py-3">{data.EndSchedule}</td>
-                      <td className="px-4 py-3">{data.Add}</td>
-                      <td className="px-4 py-3">{data.Priority}</td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <button
-                            className="bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-medium px-4 py-1 rounded shadow-sm transition duration-200"
-                            onClick={() => HandelData(data._id)}
-                          >
-                            ✏️ Edit
-                          </button>
-                          <button
-                            className="bg-red-500 hover:bg-red-600 text-white text-xs font-medium px-4 py-1 rounded shadow-sm transition duration-200"
-                            onClick={() => RemoveTask(data._id)}
-                          >
-                            🗑️ Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
+                        <td className="px-4 py-3">{data.Type}</td>
+                        <td className="px-4 py-3">{data.Assignee}</td>
+                        <td className="px-4 py-3">{data.Schedule}</td>
+                        <td className="px-4 py-3">{data.EndSchedule}</td>
+                        <td className="px-4 py-3">{data.Add}</td>
+                        <td className="px-4 py-3">{data.Priority}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <button
+                              className="bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-medium px-4 py-1 rounded shadow-sm transition duration-200"
+                              onClick={() => HandelData(data._id)}
+                            >
+                              ✏️ Edit
+                            </button>
+                            <button
+                              className="bg-red-500 hover:bg-red-600 text-white text-xs font-medium px-4 py-1 rounded shadow-sm transition duration-200"
+                              onClick={() => RemoveTask(data._id)}
+                            >
+                              🗑️ Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                )}
               </table>
             </div>
           </div>

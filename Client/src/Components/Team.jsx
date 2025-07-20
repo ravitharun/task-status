@@ -8,14 +8,18 @@ import { useState } from "react";
 import { socket } from "./socket";
 import Authentication from "./Auth/Authentication";
 import { toast } from "react-toastify";
+import Loader from "./Loader";
+
 import { userEmail } from "./Email";
 
 function Team() {
   const [Teammember, setTeam] = useState([]);
+  const [Load, setLoader] = useState(false);
 
   useEffect(() => {
     const teamMembers = async () => {
       try {
+        setLoader(true);
         const response = await axios.get(
           `http://localhost:3000/api/Task/Member?userEmail=${userEmail}`
         );
@@ -23,6 +27,8 @@ function Team() {
         // console.log(response.data.message);
       } catch (err) {
         console.log(err, "error");
+      } finally {
+        setLoader(false);
       }
     };
     teamMembers();
@@ -177,39 +183,23 @@ function Team() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
-                {Teammember.map((member, index) => (
-                  <tr key={index} className="hover:bg-gray-50 transition">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold uppercase">
-                          {member.Name.charAt(0)}
+              {Load ? (
+                <Loader />
+              ) : (
+                <tbody className="divide-y divide-gray-100">
+                  {Teammember.map((member, index) => (
+                    <tr key={index} className="hover:bg-gray-50 transition">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold uppercase">
+                            {member.Name.charAt(0)}
+                          </div>
+                          <span className="font-medium text-gray-800">
+                            {member.Name}
+                          </span>
                         </div>
-                        <span className="font-medium text-gray-800">
-                          {member.Name}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <a
-                        href={`mailto:${
-                          member.members
-                        }?subject=Team Invitation&body=${encodeURIComponent(
-                          `Hi,\n\nYou are invited to join the team.\nClick the link below to accept the invitation:\nhttp://localhost:5000/accept-invite?email=${member.members}&invited=admin@example.com`
-                        )}`}
-                        className="text-blue-600 hover:underline"
-                      >
-                        {member.members}
-                      </a>
-                    </td>
-                    <td className="px-6 py-4">
-                      {(member.role || "employee").charAt(0).toUpperCase() +
-                        (member.role || "employee").slice(1).toLowerCase()}
-                    </td>
-
-                    <td>
-                      <span>
-                        {" "}
+                      </td>
+                      <td className="px-6 py-4">
                         <a
                           href={`mailto:${
                             member.members
@@ -218,35 +208,55 @@ function Team() {
                           )}`}
                           className="text-blue-600 hover:underline"
                         >
-                          {member.invitedBy}
+                          {member.members}
                         </a>
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-3 py-1 text-sm font-medium rounded-full ${
-                          member.status === "online"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
-                        }`}
-                      >
-                        {member.status}
-                      </span>
-                    </td>
+                      </td>
+                      <td className="px-6 py-4">
+                        {(member.role || "employee").charAt(0).toUpperCase() +
+                          (member.role || "employee").slice(1).toLowerCase()}
+                      </td>
 
-                    <td>
-                      <button
-                        className="px-3 py-1 text-sm bg-red-500 text-white rounded-md hover:bg-red-600"
-                        onClick={() => ReomeveTeamMember(member._id)}
-                        title="Remove Team Member"
-                        style={{ cursor: "pointer" }}
-                      >
-                        Remove
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+                      <td>
+                        <span>
+                          {" "}
+                          <a
+                            href={`mailto:${
+                              member.members
+                            }?subject=Team Invitation&body=${encodeURIComponent(
+                              `Hi,\n\nYou are invited to join the team.\nClick the link below to accept the invitation:\nhttp://localhost:5000/accept-invite?email=${member.members}&invited=admin@example.com`
+                            )}`}
+                            className="text-blue-600 hover:underline"
+                          >
+                            {member.invitedBy}
+                          </a>
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`px-3 py-1 text-sm font-medium rounded-full ${
+                            member.status === "online"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700"
+                          }`}
+                        >
+                          {member.status}
+                        </span>
+                      </td>
+
+                      <td>
+                        <button
+                          className="px-3 py-1 text-sm bg-red-500 text-white rounded-md hover:bg-red-600"
+                          onClick={() => ReomeveTeamMember(member._id)}
+                          title="Remove Team Member"
+                          style={{ cursor: "pointer" }}
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              )}
             </table>
           </div>
         </div>

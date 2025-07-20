@@ -5,37 +5,49 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 // import { socket } from "./socket";
 import { userEmail } from "./Email";
+import Loader from "./Loader";
+import { socket } from "./socket";
 
 const Reports = () => {
   const [showForm, setShowForm] = useState(false);
   const [issues, setIssues] = useState([]);
   const [Editting, Setedit] = useState(false);
+  const [LoadPage, setLoader] = useState(false);
 
   useEffect(() => {
     const getIssue = async () => {
-      const reponse = await axios.get("http://localhost:3000/api/issues");
-      setIssues(reponse.data.message);
+      try {
+        setLoader(true);
+        const response = await axios.get("http://localhost:3000/api/issues");
+        setIssues(response.data.message);
+      } catch (error) {
+        toast.error(error.message);
+      } finally {
+        setLoader(false);
+      }
     };
+
     getIssue();
   }, []);
-  // websocket connection to fetch existing issues
-  // useEffect(() => {
-  //   socket.on("issueAdded", (data) => {
-  //     toast.success(data.message);
-  //   });
-  //   socket.on("issueUpdated", (data) => {
-  //     toast.info(data.message);
-  //   });
-  //   // const handelRemovedissue = (data) => {
-  //   //   toast.info(data.message);
-  //   // };
 
-  //   // socket.on("issueDeleted", handelRemovedissue);
-  //   return () => {
-  //     socket.off("issueAdded");
-  //     socket.off("issueUpdated");
-  //   };
-  // }, []);
+  // websocket connection to fetch existing issues
+  useEffect(() => {
+    socket.on("issueAdded", (data) => {
+      toast.success(data.message);
+    });
+    socket.on("issueUpdated", (data) => {
+      toast.info(data.message);
+    });
+    // const handelRemovedissue = (data) => {
+    //   toast.info(data.message);
+    // };
+
+    // socket.on("issueDeleted", handelRemovedissue);
+    return () => {
+      socket.off("issueAdded");
+      socket.off("issueUpdated");
+    };
+  }, []);
 
   const [newIssue, setNewIssue] = useState({
     title: "",
@@ -80,13 +92,10 @@ const Reports = () => {
   const handleRemoveIssue = async (id) => {
     console.log(id, "id remove");
     try {
-       await axios.delete(
-        `http://localhost:3000/api/report/delete/${id}`
-      );
+      await axios.delete(`http://localhost:3000/api/report/delete/${id}`);
     } catch (error) {
       // toast.error("Error removing issue: " + error.message);
-      console.log(error.message,"error.message");
-      
+      console.log(error.message, "error.message");
     }
     const updatedIssues = issues.filter((issue) => issue._id !== id);
     setIssues(updatedIssues);
@@ -181,7 +190,7 @@ const Reports = () => {
         <div className="fixed top-16 left-0 h-[calc(100vh-4rem)] w-64">
           <Sidebar />
         </div>
-
+        {/* <Loader /> */}
         <div className="ml-64 w-full px-4 py-6 sm:px-8">
           <div className="max-w-6xl mx-auto mt-4">
             <h1 className="text-3xl font-bold text-gray-800 mb-4">
@@ -322,60 +331,65 @@ const Reports = () => {
                     <th className="px-4 py-3">Action</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {issues.map((issue) => (
-                    <tr
-                      key={issue.id}
-                      className="border-t hover:bg-gray-50 transition"
-                    >
-                      <td className="px-4 py-3">{issue.title}</td>
-                      <td className="px-4 py-3">{issue.project}</td>
-                      <td className="px-4 py-3">{issue.assignedTo}</td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`inline-block px-3 py-1 text-xs font-medium rounded-full ${
-                            issue.status === "Open"
-                              ? "bg-red-100 text-red-700"
-                              : "bg-green-100 text-green-700"
-                          }`}
-                        >
-                          {issue.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">{issue.Name}</td>
-                      <td className="px-4 py-3">
-                        <a href={`mailto:${issue.Add}`}>{issue.Add}</a>
-                      </td>
-                      {/* <td className="px-4 py-3">{issue.Role}</td> */}
-                      <td className="px-4 py-3">
-                        {issue.status === "Open" && (
-                          <>
-                            <div className="flex space-x-2">
-                              <button
-                                onClick={() => handleEditreport(issue._id)}
-                                className="bg-blue-500 text-white text-xs px-3 py-1 rounded hover:bg-blue-600 transition"
-                              >
-                                Edit{" "}
-                              </button>
-                              <button
-                                onClick={() => handleResolve(issue._id)}
-                                className="bg-blue-500 text-white text-xs px-3 py-1 rounded hover:bg-gray-600 transition"
-                              >
-                                Mark Resolved
-                              </button>
-                              <button
-                                onClick={() => handleRemoveIssue(issue._id)}
-                                className="bg-blue-500 text-white text-xs px-3 py-1 rounded hover:bg-orange-800 transition"
-                              >
-                                Remove{" "}
-                              </button>
-                            </div>
-                          </>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
+
+                {LoadPage ? (
+                  <Loader />
+                ) : (
+                  <tbody>
+                    {issues.map((issue) => (
+                      <tr
+                        key={issue.id}
+                        className="border-t hover:bg-gray-50 transition"
+                      >
+                        <td className="px-4 py-3">{issue.title}</td>
+                        <td className="px-4 py-3">{issue.project}</td>
+                        <td className="px-4 py-3">{issue.assignedTo}</td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`inline-block px-3 py-1 text-xs font-medium rounded-full ${
+                              issue.status === "Open"
+                                ? "bg-red-100 text-red-700"
+                                : "bg-green-100 text-green-700"
+                            }`}
+                          >
+                            {issue.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">{issue.Name}</td>
+                        <td className="px-4 py-3">
+                          <a href={`mailto:${issue.Add}`}>{issue.Add}</a>
+                        </td>
+                        {/* <td className="px-4 py-3">{issue.Role}</td> */}
+                        <td className="px-4 py-3">
+                          {issue.status === "Open" && (
+                            <>
+                              <div className="flex space-x-2">
+                                <button
+                                  onClick={() => handleEditreport(issue._id)}
+                                  className="bg-blue-500 text-white text-xs px-3 py-1 rounded hover:bg-blue-600 transition"
+                                >
+                                  Edit{" "}
+                                </button>
+                                <button
+                                  onClick={() => handleResolve(issue._id)}
+                                  className="bg-blue-500 text-white text-xs px-3 py-1 rounded hover:bg-gray-600 transition"
+                                >
+                                  Mark Resolved
+                                </button>
+                                <button
+                                  onClick={() => handleRemoveIssue(issue._id)}
+                                  className="bg-blue-500 text-white text-xs px-3 py-1 rounded hover:bg-orange-800 transition"
+                                >
+                                  Remove{" "}
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                )}
               </table>
             </div>
 

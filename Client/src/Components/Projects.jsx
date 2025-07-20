@@ -2,19 +2,30 @@ import axios from "axios";
 import HorizontalNavbar from "./Horizontalnavbar";
 import Sidebar from "./Sidebar";
 import { useEffect, useState } from "react";
+import Loader from "./Loader";
 
 function Projects() {
   const [sampleProjects, setProjects] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
+  const[loader,setLoader]=useState(false)
 
-  useEffect(() => {
-    const GettallProjects = async () => {
+useEffect(() => {
+  const GetAllProjects = async () => {
+    try {
+      setLoader(true); // Set loader before fetching
       const response = await axios.get("http://localhost:3000/TaskAll/api");
-      setProjects(response.data.message);
-      console.log(response.data.message);
-    };
-    GettallProjects();
-  }, []);
+      setProjects(response.data.message); // Update state with project data
+      setLoader(false); // Stop loader after response or error
+    } catch (error) {
+      console.error("Failed to fetch projects:", error);
+    }
+    //  finally {
+    // }
+  };
+
+  GetAllProjects();
+}, []);
+
 
   const openPopup = (project) => {
     setSelectedProject(project);
@@ -75,6 +86,8 @@ function Projects() {
           </h1>
 
           {/* Projects Grid */}
+
+          {loader?<Loader/>:
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {sampleProjects.map((project, index) => {
               let badgeColor = "bg-gray-400";
@@ -125,7 +138,7 @@ function Projects() {
                 </div>
               );
             })}
-          </div>
+          </div>}
         </div>
       </main>
 

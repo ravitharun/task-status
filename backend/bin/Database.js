@@ -14,7 +14,7 @@ mongoose
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   email: { type: String, required: true, unique: true, lowercase: true },
-  Role:{type:String,default:"Team Member"},
+  Role: { type: String, default: "Team Member" },
   Password: { type: String, required: true },
   Profile: { type: String, default: '' },
 }, { timestamps: true });
@@ -54,11 +54,18 @@ const issues = new mongoose.Schema({
   Name: { type: String, required: true },
 }, { timestamps: true });
 
+const Activity = new mongoose.Schema({
+  message: String,
+  timestamp: { type: Date, default: Date.now },
+  user: String,
+  type: String
+})
 // Create models
 const User = mongoose.model('User', userSchema);
 const TaskModel = mongoose.model('Task', Task);
+const RecentActivityLog = mongoose.model('ActivityLog', Activity);
 const Team = mongoose.model('Team', TeamSchema);
 const Issues = mongoose.model('Issues', issues);
 
 // ✅ CommonJS export
-module.exports = { User, TaskModel, Team, Issues };
+module.exports = { User, TaskModel, Team, RecentActivityLog, Issues };

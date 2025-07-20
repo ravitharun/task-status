@@ -8,6 +8,21 @@ import {
 import { motion } from "framer-motion";
 import Sidebar from "./Sidebar";
 import HorizontalNavbar from "./Horizontalnavbar";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+
+dayjs.extend(relativeTime);
 
 export default function Dashboard() {
   const projects = {
@@ -16,6 +31,24 @@ export default function Dashboard() {
     pending: 3,
     upcoming: 1,
   };
+
+  const [recent, setrecent] = useState([]);
+
+  useEffect(() => {
+    const fetchRecent = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/recent-activity"
+        );
+        setrecent(response.data.message);
+        console.log(response.data.message);
+      } catch (err) {
+        console.error("Error fetching recent activity", err);
+      }
+    };
+
+    fetchRecent();
+  }, []);
 
   const cards = [
     {
@@ -44,12 +77,21 @@ export default function Dashboard() {
     },
   ];
 
+  const activityIcons = {
+    issue: "🐞",
+    task: "📝",
+    complete: "✅",
+    comment: "💬",
+    assign: "👥",
+    default: "📌",
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-100 font-sans">
       {/* Sidebar */}
-     <div className="w-64">
-    <Sidebar />
-  </div>
+      <div className="w-64">
+        <Sidebar />
+      </div>
 
       <div className="flex-1 flex flex-col">
         {/* Topbar */}
@@ -95,22 +137,52 @@ export default function Dashboard() {
             ))}
           </div>
 
-          {/* Chart Placeholder */}
+          <div>
+            {/* Chart Section with Recharts */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5 }}
+              className="bg-white rounded-xl p-6 shadow-lg mb-10"
+            >
+              <h3 className="text-lg font-semibold mb-4 text-gray-700">
+                📈 Project Completion Chart
+              </h3>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={[
+                      { name: "Completed", value: projects.completed },
+                      { name: "Pending", value: projects.pending },
+                      { name: "Upcoming", value: projects.upcoming },
+                    ]}
+                    margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis allowDecimals={false} />
+                    <Tooltip />
+                    <Bar
+                      dataKey="value"
+                      fill="#3b82f6"
+                      radius={[10, 10, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </motion.div>
+          </div>
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.5 }}
             className="bg-white rounded-xl p-6 shadow-lg mb-10"
           >
-            <h3 className="text-lg font-semibold mb-4 text-gray-700">
-              📈 Project Progress Overview
-            </h3>
-            <div className="h-48 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-sm">
-              Chart Placeholder – use Chart.js or Recharts here
-            </div>
+           
+         
           </motion.div>
 
-          {/* Activity Feed */}
+          {/* Recent Activity Feed */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -120,12 +192,30 @@ export default function Dashboard() {
             <h3 className="text-lg font-semibold mb-4 text-gray-700">
               📝 Recent Activity
             </h3>
-            <ul className="text-gray-600 space-y-3 text-sm leading-relaxed">
-              <li>✅ Completed task <strong>“Setup CI/CD Pipeline”</strong></li>
-              <li>🆕 Created project <strong>“Redesign Dashboard UI”</strong></li>
-              <li>📌 Assigned task to <strong>Alice</strong></li>
-              <li>🔁 Updated status of <strong>“API Integration”</strong></li>
-            </ul>
+
+            {recent.length === 0 ? (
+              <p className="text-gray-400 text-sm">No recent activity yet.</p>
+            ) : (
+              <ul className="text-gray-600 space-y-3 text-sm leading-relaxed">
+                {recent.map((recentdata, index) => (
+                  <li
+                    key={index}
+                    className="flex justify-between items-center p-2 hover:bg-gray-50 rounded-md"
+                  >
+                    <div className="flex items-center space-x-2 max-w-[75%]">
+                      <span className="text-lg">
+                        {activityIcons[recentdata.type] ||
+                          activityIcons.default}
+                      </span>
+                      <span className="truncate">{recentdata.message}</span>
+                    </div>
+                    <span className="text-red-500 text-xs whitespace-nowrap">
+                      <b>{dayjs(recentdata.timestamp).fromNow()}</b>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </motion.div>
         </main>
       </div>
